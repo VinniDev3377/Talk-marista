@@ -4,7 +4,7 @@ import type { AppState, Collection } from "../types";
 
 const TABLES: Record<Collection, string> = {
   visitors: "visitors", family: "family_members", workers: "workers", packages: "packages",
-  accesses: "accesses", reservations: "reservations", moves: "moves",
+  accesses: "accesses", reservations: "reservations", residents: "profiles", moves: "moves",
 };
 const uuid = () => globalThis.crypto?.randomUUID?.() ?? "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16); });
 const dateTime = (date?: string, time?: string) => { const now = new Date(); const stamp = date && time ? new Date(`${date}T${time}`) : time ? new Date(`${now.toISOString().slice(0, 10)}T${time}`) : now; return stamp.toISOString(); };
