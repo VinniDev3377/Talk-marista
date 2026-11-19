@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, Wrench } from "lucide-react";
 import { newId } from "../storage";
+import { APARTMENTS } from "../constants";
 import { Bottom, Empty, Header, Modal, ListItem } from "../components/ui";
 import type { AddFn, ScreenProps } from "../types";
 
@@ -12,6 +13,8 @@ import type { AddFn, ScreenProps } from "../types";
 export function Workers({ s, add, nav }: ScreenProps) {
   const [open, setOpen] = useState(false);
   const isResident = s.role === "morador";
+  const isGate = s.role === "portaria";
+  const canManage = isResident || isGate;
   const rows = isResident ? s.workers.filter((x) => x.apartment === s.apartment) : s.workers;
 
   return (
@@ -19,7 +22,7 @@ export function Workers({ s, add, nav }: ScreenProps) {
       <Header
         title="Funcionários e prestadores"
         back={nav.back}
-        action={isResident && <button className="add" onClick={() => setOpen(true)}><Plus /></button>}
+        action={canManage && <button className="add" onClick={() => setOpen(true)}><Plus /></button>}
       />
       <main className="content">
         <div className="info"><Wrench /><span>Controle pessoas autorizadas a prestar serviços.</span></div>
@@ -33,9 +36,9 @@ export function Workers({ s, add, nav }: ScreenProps) {
           />
         ))}
         {!rows.length && <Empty text="Nenhum cadastro encontrado." />}
-        {isResident && <button className="primary" onClick={() => setOpen(true)}><Plus /> NOVO CADASTRO</button>}
+        {canManage && <button className="primary" onClick={() => setOpen(true)}><Plus /> NOVO CADASTRO</button>}
       </main>
-      {open && <WorkerModal apartment={s.apartment} add={add} close={() => setOpen(false)} />}
+      {open && <WorkerModal apartment={s.apartment} isGate={isGate} add={add} close={() => setOpen(false)} />}
       {isResident && <Bottom active="account" nav={nav} />}
     </div>
   );
@@ -47,18 +50,21 @@ export function Workers({ s, add, nav }: ScreenProps) {
  * @param add — função que salva a pessoa autorizada.
  * @param close — ação que fecha o formulário.
  */
-function WorkerModal({ apartment, add, close }: { apartment: string; add: AddFn; close: () => void }) {
+function WorkerModal({ apartment, isGate, add, close }: { apartment: string; isGate: boolean; add: AddFn; close: () => void }) {
   const [name, setName] = useState("");
+  const [targetApartment, setTargetApartment] = useState(apartment);
   const [type, setType] = useState("Funcionário");
   const [company, setCompany] = useState("");
 
   const save = () => {
-    add("workers", { id: newId(), name, apartment, type, company, active: true });
+    if (!targetApartment) return;
+    add("workers", { id: newId(), name, apartment: targetApartment, type, company, active: true });
     close();
   };
 
   return (
     <Modal title="Nova pessoa autorizada" close={close}>
+      {isGate && <label>Apartamento<select value={targetApartment} onChange={(e) => setTargetApartment(e.target.value)}><option value="">Selecione</option>{APARTMENTS.map((a) => <option key={a}>{a}</option>)}</select></label>}
       <label>Nome<input value={name} onChange={(e) => setName(e.target.value)} /></label>
       <label>Tipo
         <select value={type} onChange={(e) => setType(e.target.value)}>
@@ -66,7 +72,7 @@ function WorkerModal({ apartment, add, close }: { apartment: string; add: AddFn;
         </select>
       </label>
       <label>Empresa / função<input value={company} onChange={(e) => setCompany(e.target.value)} /></label>
-      <button className="primary" disabled={!name} onClick={save}>SALVAR CADASTRO</button>
+      <button className="primary" disabled={!name.trim() || !targetApartment} onClick={save}>SALVAR CADASTRO</button>
     </Modal>
   );
 }
