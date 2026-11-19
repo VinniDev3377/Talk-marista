@@ -1504,3 +1504,12 @@ button:active { transform: scale(.985); }
 .notification-row.is-read { opacity: .78; }
 .notification-row>div { color: var(--tm-gold-light); }
 .notification-row .mini { display: inline-flex; align-items: center; gap: 5px; }
+
+
+/* Atalhos operacionais da Portaria — preserva a identidade visual existente. */
+.gate-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 16px}
+.gate-shortcuts button{min-height:48px;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px 6px;border:1px solid var(--tm-line);border-radius:13px;background:rgba(255,255,255,.055);color:var(--tm-gold-light);font-size:12px}
+.gate-shortcuts svg{width:16px;height:16px;flex:0 0 auto}
+.apartment-count{display:block;margin-top:3px;font-size:9px!important;color:var(--tm-muted)!important;letter-spacing:0}
+.reservation-review{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:380px){.gate-shortcuts button{font-size:10px;gap:4px;padding-inline:3px}}
