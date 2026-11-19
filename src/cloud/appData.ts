@@ -4,7 +4,7 @@ import type { AppState, Collection } from "../types";
 
 const TABLES: Record<Collection, string> = {
   visitors: "visitors", family: "family_members", workers: "workers", packages: "packages",
-  accesses: "accesses", reservations: "reservations", residents: "residents", moves: "moves",
+  accesses: "accesses", reservations: "reservations", residents: "profiles", moves: "moves",
 };
 const uuid = () => globalThis.crypto?.randomUUID?.() ?? "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16); });
 const dateTime = (date?: string, time?: string) => { const now = new Date(); const stamp = date && time ? new Date(`${date}T${time}`) : time ? new Date(`${now.toISOString().slice(0, 10)}T${time}`) : now; return stamp.toISOString(); };
@@ -40,7 +40,7 @@ function toRow(collection: Collection, item: Record<string, any>, userId: string
 
 export async function loadCloudAppData(apartment: string, role: string): Promise<Partial<AppState>> {
   if (!supabase) throw new Error("Supabase não configurado.");
-  const collections = Object.keys(TABLES) as Collection[];
+  const collections = (Object.keys(TABLES) as Collection[]).filter(collection => collection !== "residents");
   const results = await Promise.all(collections.map(async collection => {
     let query = supabase!.from(TABLES[collection]).select("*");
     if (role === "morador" && ["visitors", "family", "workers", "packages", "accesses", "reservations", "residents", "moves"].includes(collection)) query = query.eq("apartment", apartment);
@@ -49,6 +49,13 @@ export async function loadCloudAppData(apartment: string, role: string): Promise
     return [collection, (data ?? []).map(row => fromRow(collection, row))] as const;
   }));
   const state = Object.fromEntries(results) as Partial<AppState>;
+  // Moradores são perfis autenticados; não existe tabela operacional `residents` no schema atual.
+  const { data: residentProfiles, error: residentError } = await supabase.from("profiles")
+    .select("id,full_name,apartment,role").eq("role", "morador");
+  if (residentError) throw new Error(`Falha ao carregar moradores: ${residentError.message}`);
+  state.residents = (residentProfiles ?? []).filter(row => row.apartment).map(row => ({
+    id: row.id, name: row.full_name, apartment: row.apartment, kind: "Proprietário" as const, phone: "",
+  }));
   if (supabase && state.packages?.length) {
     state.packages = await Promise.all(state.packages.map(async (item: any) => {
       if (!item.photoPath) return item;
@@ -89,6 +96,7 @@ export async function updateCloudRecord(collection: Collection, id: string, chan
   if (!supabase) throw new Error("Supabase não configurado.");
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) throw new Error("Sua sessão expirou. Entre novamente.");
+  if (collection === "residents") throw new Error("Os moradores são gerenciados pelos perfis aprovados da portaria.");
   const payload = toRow(collection, changes, authData.user.id, true);
   const { data, error } = await supabase.from(TABLES[collection]).update(payload).eq("id", id).select("*").single();
   if (error) throw new Error(`Não foi possível atualizar ${TABLES[collection]}: ${error.message}`);
@@ -102,6 +110,7 @@ export async function updateCloudRecord(collection: Collection, id: string, chan
 
 export async function deleteCloudRecord(collection: Collection, id: string) {
   if (!supabase) throw new Error("Supabase não configurado.");
+  if (collection === "residents") throw new Error("Os moradores são gerenciados pelos perfis aprovados da portaria.");
   const { error } = await supabase.from(TABLES[collection]).delete().eq("id", id);
   if (error) throw new Error(`Não foi possível excluir de ${TABLES[collection]}: ${error.message}`);
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, Check } from "lucide-react";
+import { CalendarDays, Check, X } from "lucide-react";
 import { LEISURE_SPACES } from "../constants";
 import { newId } from "../storage";
 import { Bottom, Empty, Header, ListItem, LocalModeNotice, Section } from "../components/ui";
@@ -10,19 +10,20 @@ import type { ScreenProps } from "../types";
  * @param add — função que inclui a nova reserva.
  * @param nav — comandos de navegação entre telas.
  */
-export function Reservations({ s, add, nav }: ScreenProps) {
+export function Reservations({ s, add, update, nav }: ScreenProps) {
   const [spaceName, setSpaceName] = useState(LEISURE_SPACES[0].name);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("10:00");
 
   const space = LEISURE_SPACES.find((x) => x.name === spaceName) ?? LEISURE_SPACES[0];
-  const mine = s.reservations.filter((r) => r.apartment === s.apartment);
+  const isGate = s.role === "portaria";
+  const mine = isGate ? s.reservations : s.reservations.filter((r) => r.apartment === s.apartment);
 
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const save = () => {
     if (!date || date < today || !time || !s.apartment) return;
-    add("reservations", { id: newId(), apartment: s.apartment, area: spaceName, date, time, status: "Confirmada" });
+    add("reservations", { id: newId(), apartment: s.apartment, area: spaceName, date, time, status: "Aguardando aprovação" });
     setDate("");
   };
 
@@ -33,7 +34,7 @@ export function Reservations({ s, add, nav }: ScreenProps) {
         <Section title="Agende seu espaço" subtitle="Próximas reservas" icon={<CalendarDays />} />
         <LocalModeNotice />
 
-        <div className="form">
+        {!isGate && <div className="form">
           <div className="space-preview" style={{ backgroundImage: `url(${space.image})` }} />
           <label>Espaço
             <select value={spaceName} onChange={(e) => setSpaceName(e.target.value)}>
@@ -45,7 +46,7 @@ export function Reservations({ s, add, nav }: ScreenProps) {
             <label>Horário<input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></label>
           </div>
           <button className="primary" disabled={!date || date < today || !time} onClick={save}><Check /> CONFIRMAR RESERVA</button>
-        </div>
+        </div>}
 
         {mine.map((r) => (
           <ListItem
@@ -55,11 +56,12 @@ export function Reservations({ s, add, nav }: ScreenProps) {
             title={r.area}
             sub={`${r.date} às ${r.time}`}
             status={r.status}
+            action={isGate && r.status === "Aguardando aprovação" ? <div className="reservation-review"><button className="mini" onClick={() => update("reservations", r.id, { status: "Aprovada" })}><Check /> Aprovar</button><button className="mini warn" onClick={() => update("reservations", r.id, { status: "Recusada" })}><X /> Recusar</button></div> : undefined}
           />
         ))}
-        {!mine.length && <Empty text="Você ainda não possui reservas." />}
+        {!mine.length && <Empty text={isGate ? "Nenhuma solicitação de reserva." : "Você ainda não possui reservas."} />}
       </main>
-      <Bottom active="reservations" nav={nav} />
+      {!isGate && <Bottom active="reservations" nav={nav} />}
     </div>
   );
 }
