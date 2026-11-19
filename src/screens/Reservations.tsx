@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, Check, X } from "lucide-react";
+import { CalendarDays, Check, X, Trash2 } from "lucide-react";
 import { LEISURE_SPACES } from "../constants";
 import { newId } from "../storage";
 import { Bottom, Empty, Header, ListItem, LocalModeNotice, Section, ResidentTopTabs } from "../components/ui";
@@ -10,7 +10,7 @@ import type { ScreenProps } from "../types";
  * @param add — função que inclui a nova reserva.
  * @param nav — comandos de navegação entre telas.
  */
-export function Reservations({ s, add, update, nav }: ScreenProps) {
+export function Reservations({ s, add, update, remove, nav }: ScreenProps) {
   const [spaceName, setSpaceName] = useState(LEISURE_SPACES[0].name);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("10:00");
@@ -57,7 +57,7 @@ export function Reservations({ s, add, update, nav }: ScreenProps) {
             title={r.area}
             sub={`${r.date} às ${r.time}`}
             status={r.status}
-            action={isGate && r.status === "Aguardando aprovação" ? <div className="reservation-review"><button className="mini" onClick={() => update("reservations", r.id, { status: "Aprovada" })}><Check /> Aprovar</button><button className="mini warn" onClick={() => update("reservations", r.id, { status: "Recusada" })}><X /> Recusar</button></div> : undefined}
+            action={isGate ? <div className="reservation-review">{r.status === "Aguardando aprovação" && <><button className="mini" onClick={() => update("reservations", r.id, { status: "Aprovada" })}><Check /> Aprovar</button><button className="mini warn" onClick={() => update("reservations", r.id, { status: "Recusada" })}><X /> Recusar</button></>}<button className="mini warn" onClick={() => { if (window.confirm("Excluir esta reserva?")) remove("reservations", r.id); }}><Trash2 /> Excluir</button></div> : undefined}
           />
         ))}
         {!mine.length && <Empty text={isGate ? "Nenhuma solicitação de reserva." : "Você ainda não possui reservas."} />}
