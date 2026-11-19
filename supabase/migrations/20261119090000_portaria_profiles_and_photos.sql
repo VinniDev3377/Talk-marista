@@ -11,12 +11,6 @@ for all to authenticated
 using (public.current_role() = 'portaria')
 with check (public.current_role() = 'portaria');
 
-drop policy if exists "profile owner update avatar" on public.profiles;
-create policy "profile owner update avatar" on public.profiles
-for update to authenticated
-using (id = auth.uid())
-with check (id = auth.uid());
-
 drop policy if exists "portaria manage visitors" on public.visitors;
 create policy "portaria manage visitors" on public.visitors
 for all to authenticated using (public.current_role() = 'portaria')
