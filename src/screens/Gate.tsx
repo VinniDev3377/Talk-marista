@@ -32,13 +32,13 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
 
   // Busca a fila somente quando a Portaria abre a aba de cadastros pendentes.
   useEffect(() => {
-    if (section !== "cadastros" || !cloudConfigured) return;
+    if (!cloudConfigured) return;
     let active = true;
     Promise.all([listResidentRegistrationRequests(), managePortariaUsers({ action: "list" })])
       .then(([rows, users]) => { if (active) { setRegistrationRequests(rows); setManagedUsers(users.users ?? []); setRegistrationError(""); } })
       .catch(err => { if (active) setRegistrationError(err instanceof Error ? err.message : "Falha ao carregar cadastros."); });
     return () => { active = false; };
-  }, [section]);
+  }, []);
 
   const reviewRegistration = async (id: string, decision: "approve" | "reject") => {
     setReviewBusy(id); setRegistrationError("");
@@ -73,7 +73,7 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
         <button className={section === "painel" ? "on" : ""} onClick={() => setSection("painel")}>Resumo</button>
         <button className={section === "moradores" ? "on" : ""} onClick={() => setSection("moradores")}>Moradores</button>
         <button className={section === "mudancas" ? "on" : ""} onClick={() => setSection("mudancas")}>Mudanças {pendingMoves ? `(${pendingMoves})` : ""}</button>
-        <button className={section === "cadastros" ? "on" : ""} onClick={() => setSection("cadastros")}>Cadastros</button>
+        <button className={section === "cadastros" ? "on" : ""} onClick={() => setSection("cadastros")}>Cadastros {registrationRequests.length ? `(${registrationRequests.length})` : ""}</button>
         <button type="button" onClick={() => nav.go("reservations")}>Reservas</button>
         <button type="button" onClick={() => nav.go("visitors")}>Visitantes</button>
         <button type="button" onClick={() => nav.go("workers")}>Prestadores</button>
@@ -94,7 +94,15 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
           <div><CalendarDays /><b>{pendingReservations}</b><small>Reservas pendentes</small></div>
         </div>
 
-        <button className="primary gate-action" onClick={() => nav.go("packages")}><Package /> ENCOMENDAS</button>
+        {registrationRequests.length > 0 && <section className="management-section pending-registrations">
+          <Section title="Aprovação necessária" subtitle="Novos cadastros de moradores" icon={<ShieldCheck />} />
+          {registrationRequests.map(request => <div className="management-row" key={request.id}>
+            <div><b>{request.full_name}</b><small>Apartamento {request.apartment} · {new Date(request.created_at).toLocaleString("pt-BR")}</small></div>
+            <button className="mini" disabled={reviewBusy === request.id} onClick={() => reviewRegistration(request.id, "approve")}>{reviewBusy === request.id ? "Aguarde..." : "Aprovar"}</button>
+            <button className="mini warn" disabled={reviewBusy === request.id} onClick={() => reviewRegistration(request.id, "reject")}>Recusar</button>
+          </div>)}
+        </section>}
+                <button className="primary gate-action" onClick={() => nav.go("packages")}><Package /> ENCOMENDAS</button>
         <div className="gate-shortcuts" aria-label="Acesso rápido da portaria">
           <button type="button" onClick={() => nav.go("reservations")}><CalendarDays /> Reservas</button>
           <button type="button" onClick={() => nav.go("visitors")}><Users /> Visitantes</button>
