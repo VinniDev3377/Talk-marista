@@ -10,7 +10,7 @@ export function ResidentMoves({ s, add, nav }: ScreenProps) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("09:00");
   const [company, setCompany] = useState("");
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   const rows = s.moves.filter((m) => m.apartment === s.apartment).sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -19,7 +19,7 @@ export function ResidentMoves({ s, add, nav }: ScreenProps) {
     setOpen(false); setDate(""); setCompany("");
   };
   return <div className="screen app"><Header title="Solicitações de mudança" back={nav.back} /><main className="content">
-    <p>Envie sua solicitação com antecedência. A mudança só estará autorizada depois da aprovação da Portaria.</p>
+    <p>Escolha uma data e horário para sua mudança. A solicitação será registrada no banco e ficará aguardando a aprovação da Portaria.</p>
     <button className="primary" onClick={() => setOpen(true)}>Nova pré-solicitação</button>
     {rows.map((m) => <ListItem key={m.id} icon={<span>↔</span>} title={`Mudança de ${m.kind.toLowerCase()}`} sub={`${m.date} às ${m.time} · ${m.company || "Sem empresa informada"}`} status={m.status} />)}
     {!rows.length && <Empty text="Você ainda não possui solicitações de mudança." />}

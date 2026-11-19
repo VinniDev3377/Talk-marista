@@ -47,7 +47,7 @@ export default function App() {
         if (active) setS((prev) => ({ ...prev, ...cloudData }));
       }).catch((error) => console.warn("Falha ao atualizar dados em tempo real:", error));
     };
-    const stop = ["profiles", "visitors", "family_members", "workers", "packages", "accesses", "reservations", "moves"]
+    const stop = ["apartments", "profiles", "visitors", "family_members", "workers", "packages", "package_events", "accesses", "reservations", "moves", "service_requests", "resident_registration_requests", "apartment_notifications"]
       .map((table) => subscribeTable(table, refresh));
     return () => { active = false; stop.forEach((unsubscribe) => unsubscribe()); };
   }, [s.loggedIn, s.apartment, s.role]);

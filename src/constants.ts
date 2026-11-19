@@ -5,9 +5,9 @@ import type { LeisureSpace, PackageKind, PackageSize, Role, Screen } from "./typ
 /** Foto do prédio (tela inicial, login e painel do morador). Arquivo: assets/imagens/predio */
 export const BUILDING_IMAGE = image("predio");
 
-/** Apartamentos: 301–304, 401–404 ... 2401–2404 (andares 3 a 24, 4 por andar). */
-export const APARTMENTS: string[] = Array.from({ length: 22 * 4 }, (_, i) => {
-  const floor = 3 + Math.floor(i / 4);
+/** Apartamentos ativos: 401–404 ... 2401–2404 (andares 4 a 24, 4 por andar). */
+export const APARTMENTS: string[] = Array.from({ length: 21 * 4 }, (_, i) => {
+  const floor = 4 + Math.floor(i / 4);
   const unit = (i % 4) + 1;
   return `${floor}${String(unit).padStart(2, "0")}`;
 });
