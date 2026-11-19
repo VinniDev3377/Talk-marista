@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - feat/admin-perfis-fotos-desktop-ui
     paths:
       - "supabase/migrations/**"
       - "supabase/functions/**"
+      - ".github/workflows/deploy-supabase.yml"
   workflow_dispatch:
 
 jobs:
