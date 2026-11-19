@@ -24,7 +24,7 @@ jobs:
       - name: Verificar tipos e compilar
         run: npm run build
       - name: Preparar pacote ZIP do código atualizado
-        run: zip -r talk-marista-codigo-atualizado.zip . -x ".git/*" "node_modules/*" "dist/*" ".vercel/*"
+        run: zip -r talk-marista-codigo-atualizado.zip . -x ".git/*" "node_modules/*" "dist/*" ".vercel/*" "talk-marista-codigo-atualizado.zip"
       - name: Disponibilizar ZIP para download
         uses: actions/upload-artifact@v4
         with:
