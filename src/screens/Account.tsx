@@ -65,6 +65,7 @@ export function Account({ s, nav, onLogout }: Pick<ScreenProps, "s" | "nav"> & {
           <div><CircleUserRound /></div>
           <span><b>{s.userName}</b><small>Apartamento {s.apartment}</small></span>
         </div>
+        <ProfilePhotoEditor />
         {LINKS.map((l) => (
           <button className="account-row" key={l.screen} onClick={() => nav.go(l.screen)}>
             {l.icon}<span>{l.title}</span><ChevronRight />
