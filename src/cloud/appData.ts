@@ -51,7 +51,7 @@ export async function loadCloudAppData(apartment: string, role: string): Promise
   const state = Object.fromEntries(results) as Partial<AppState>;
   // Moradores são perfis autenticados; não existe tabela operacional `residents` no schema atual.
   const { data: residentProfiles, error: residentError } = await supabase.from("profiles")
-    .select("id,full_name,apartment,role").eq("role", "morador");
+    .select("id,full_name,apartment,role,avatar_path").in("role", ["morador", "portaria"]);
   if (residentError) throw new Error(`Falha ao carregar moradores: ${residentError.message}`);
   state.residents = (residentProfiles ?? []).filter(row => row.apartment).map(row => ({
     id: row.id, name: row.full_name, apartment: row.apartment, kind: "Proprietário" as const, phone: "",
