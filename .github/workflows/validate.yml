@@ -23,6 +23,12 @@ jobs:
         run: npm install
       - name: Verificar tipos e compilar
         run: npm run build
+      - name: Configurar Deno para validar a Edge Function
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Validar função de administração do Supabase
+        run: deno check supabase/functions/portaria-user-admin/index.ts
       - name: Preparar pacote ZIP do código atualizado
         run: zip -r talk-marista-codigo-atualizado.zip . -x ".git/*" "node_modules/*" "dist/*" ".vercel/*" "talk-marista-codigo-atualizado.zip"
       - name: Disponibilizar ZIP para download
