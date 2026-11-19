@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CalendarDays, Check, X } from "lucide-react";
 import { LEISURE_SPACES } from "../constants";
 import { newId } from "../storage";
-import { Bottom, Empty, Header, ListItem, LocalModeNotice, Section } from "../components/ui";
+import { Bottom, Empty, Header, ListItem, LocalModeNotice, Section, ResidentTopTabs } from "../components/ui";
 import type { ScreenProps } from "../types";
 
 /** Reserva de espaços de lazer do morador. 
@@ -29,7 +29,7 @@ export function Reservations({ s, add, update, nav }: ScreenProps) {
 
   return (
     <div className="screen app">
-      <Header title="Reservas" back={nav.back} />
+      <Header title="Reservas" back={nav.back} />\n      {!isGate && <ResidentTopTabs active="reservations" nav={nav} />}
       <main className="content">
         <Section title="Agende seu espaço" subtitle="Próximas reservas" icon={<CalendarDays />} />
         <LocalModeNotice />
