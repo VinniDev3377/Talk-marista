@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Package, Plus, Search } from "lucide-react";
+import { Package, Plus, Search, Trash2 } from "lucide-react";
 import { APARTMENTS, PACKAGE_KINDS, PACKAGE_SIZES } from "../constants";
 import { newId } from "../storage";
 import { Bottom, Chips, Empty, Header, Modal, PhotoPicker, ListItem } from "../components/ui";
@@ -15,7 +15,7 @@ import type { AddFn, PackageKind, PackageSize, ScreenProps, Delivery } from "../
  * @param add — função usada para cadastrar ou atualizar uma encomenda local.
  * @param nav — comandos de navegação entre telas.
  */
-export function Packages({ s, add, update, nav }: ScreenProps) {
+export function Packages({ s, add, update, remove, nav }: ScreenProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"pendentes" | "retiradas">("pendentes");
@@ -64,7 +64,7 @@ export function Packages({ s, add, update, nav }: ScreenProps) {
             title={`Apto ${p.apartment} · ${p.recipient}`}
             sub={`${p.kind} ${p.size.toLowerCase()} · ${p.receivedAt}${p.withdrawnBy ? ` · Retirada por ${p.withdrawnBy}` : ""}${p.withdrawnAt ? ` · ${p.withdrawnAt}` : ""}`}
             status={p.status}
-            action={canRegister && p.status === "Recebida" ? <button className="mini" onClick={() => setSelected(p)}>Registrar retirada</button> : undefined}
+            action={canRegister ? <div className="reservation-review">{p.status === "Recebida" && <button className="mini" onClick={() => setSelected(p)}>Registrar retirada</button>}<button className="mini warn" onClick={() => { if (window.confirm(`Excluir a encomenda de ${p.recipient}?`)) remove("packages", p.id); }}><Trash2 /> Excluir</button></div> : undefined}
           />
         ))}
         {!rows.length && <Empty text="Nenhuma encomenda encontrada." />}
