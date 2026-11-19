@@ -57,7 +57,10 @@ with check (public.current_role() = 'portaria');
 
 drop policy if exists "profile photos read" on storage.objects;
 create policy "profile photos read" on storage.objects
-for select to authenticated using (bucket_id = 'profile-photos');
+for select to authenticated using (
+  bucket_id = 'profile-photos'
+  and ((storage.foldername(name))[1] = auth.uid()::text or public.current_role() = 'portaria')
+);
 
 drop policy if exists "profile photos upload" on storage.objects;
 create policy "profile photos upload" on storage.objects
