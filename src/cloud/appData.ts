@@ -53,8 +53,11 @@ export async function loadCloudAppData(apartment: string, role: string): Promise
   const { data: residentProfiles, error: residentError } = await supabase.from("profiles")
     .select("id,full_name,apartment,role,avatar_path").in("role", ["morador", "portaria"]);
   if (residentError) throw new Error(`Falha ao carregar moradores: ${residentError.message}`);
-  state.residents = (residentProfiles ?? []).filter(row => row.apartment).map(row => ({
-    id: row.id, name: row.full_name, apartment: row.apartment, kind: "Proprietário" as const, phone: "",
+  state.residents = await Promise.all((residentProfiles ?? []).filter(row => row.role === "morador" && row.apartment).map(async row => {
+    const signed = row.avatar_path
+      ? await supabase!.storage.from("profile-photos").createSignedUrl(row.avatar_path, 3600)
+      : { data: null };
+    return { id: row.id, name: row.full_name, apartment: row.apartment!, avatarUrl: signed.data?.signedUrl, kind: "Proprietário" as const, phone: "" };
   }));
   if (supabase && state.packages?.length) {
     state.packages = await Promise.all(state.packages.map(async (item: any) => {
@@ -96,7 +99,7 @@ export async function updateCloudRecord(collection: Collection, id: string, chan
   if (!supabase) throw new Error("Supabase não configurado.");
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) throw new Error("Sua sessão expirou. Entre novamente.");
-  if (collection === "residents") throw new Error("Os moradores são gerenciados pelos perfis aprovados da portaria.");
+  if (collection === "residents") throw new Error("Edite perfis pela ferramenta segura da Portaria.");
   const payload = toRow(collection, changes, authData.user.id, true);
   const { data, error } = await supabase.from(TABLES[collection]).update(payload).eq("id", id).select("*").single();
   if (error) throw new Error(`Não foi possível atualizar ${TABLES[collection]}: ${error.message}`);
@@ -110,7 +113,10 @@ export async function updateCloudRecord(collection: Collection, id: string, chan
 
 export async function deleteCloudRecord(collection: Collection, id: string) {
   if (!supabase) throw new Error("Supabase não configurado.");
-  if (collection === "residents") throw new Error("Os moradores são gerenciados pelos perfis aprovados da portaria.");
+  if (collection === "residents") throw new Error("Exclua contas pela ferramenta segura da Portaria.");
+  let photoPath: string | null = null;
+  if (collection === "packages") { const { data } = await supabase.from("packages").select("photo_path").eq("id", id).maybeSingle(); photoPath = data?.photo_path ?? null; }
   const { error } = await supabase.from(TABLES[collection]).delete().eq("id", id);
+  if (!error && photoPath) await supabase.storage.from("package-photos").remove([photoPath]);
   if (error) throw new Error(`Não foi possível excluir de ${TABLES[collection]}: ${error.message}`);
 }
