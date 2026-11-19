@@ -40,7 +40,8 @@ export function Packages({ s, add, update, nav }: ScreenProps) {
         back={nav.back}
         action={canRegister && <button className="add" onClick={() => setOpen(true)} aria-label="Registrar encomenda"><Plus /></button>}
       />
-      {isResident && <ResidentTopTabs active="packages" nav={nav} />}\n      <main className="content">
+      {isResident && <ResidentTopTabs active="packages" nav={nav} />}
+      <main className="content">
         <div className="search">
           <Search />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome, apartamento ou tipo" />
