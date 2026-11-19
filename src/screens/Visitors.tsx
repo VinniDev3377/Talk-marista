@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, ShieldCheck, Users } from "lucide-react";
 import { newId } from "../storage";
 import { APARTMENTS } from "../constants";
-import { Bottom, Empty, Header, Modal, ListItem } from "../components/ui";
+import { Bottom, Empty, Header, Modal, ListItem, ResidentTopTabs } from "../components/ui";
 import type { AddFn, ScreenProps, Visitor } from "../types";
 
 /** Visitantes autorizados pelo morador. 
@@ -17,7 +17,7 @@ export function Visitors({ s, add, nav }: ScreenProps) {
 
   return (
     <div className="screen app">
-      <Header title="Visitantes" back={nav.back} action={<button className="add" onClick={() => setOpen(true)}><Plus /></button>} />
+      <Header title="Visitantes" back={nav.back} action={<button className="add" onClick={() => setOpen(true)}><Plus /></button>} />\n      {!isGate && <ResidentTopTabs active="visitors" nav={nav} />}
       <main className="content">
         <div className="info"><ShieldCheck /><span>Cadastre visitantes e agilize o acesso à portaria.</span></div>
         {mine.map((v) => <ListItem key={v.id} icon={<Users />} title={v.name} sub={`${v.type} · ${v.date}`} status={v.status} />)}
