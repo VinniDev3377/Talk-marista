@@ -16,9 +16,23 @@ values ('profile-photos', 'profile-photos', false)
 on conflict (id) do nothing;
 
 drop policy if exists "portaria manage profiles" on public.profiles;
-create policy "portaria manage profiles" on public.profiles
-for all to authenticated
-using (public.current_role() = 'portaria')
+create policy "portaria read profiles" on public.profiles
+for select to authenticated
+using (public.current_role() = 'portaria');
+
+drop policy if exists "portaria manage family members" on public.family_members;
+create policy "portaria manage family members" on public.family_members
+for all to authenticated using (public.current_role() = 'portaria')
+with check (public.current_role() = 'portaria');
+
+drop policy if exists "portaria manage accesses" on public.accesses;
+create policy "portaria manage accesses" on public.accesses
+for all to authenticated using (public.current_role() = 'portaria')
+with check (public.current_role() = 'portaria');
+
+drop policy if exists "portaria manage moves" on public.moves;
+create policy "portaria manage moves" on public.moves
+for all to authenticated using (public.current_role() = 'portaria')
 with check (public.current_role() = 'portaria');
 
 drop policy if exists "portaria manage visitors" on public.visitors;
