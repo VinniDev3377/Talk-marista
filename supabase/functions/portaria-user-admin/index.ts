@@ -36,6 +36,23 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = String(body.action ?? "");
 
+    if (action === "update-avatar") {
+      const userId = String(body.userId ?? "");
+      if (!userId || (!isPortaria && userId !== callerData.user.id)) return json({ error: "Sem permissão para alterar esta foto." }, 403);
+      const photo = String(body.photo ?? "");
+      const match = photo.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
+      if (!match) return json({ error: "Selecione uma foto válida." }, 400);
+      const bytes = Uint8Array.from(atob(match[2]), (char) => char.charCodeAt(0));
+      const extension = match[1] === "image/png" ? "png" : match[1] === "image/webp" ? "webp" : "jpg";
+      const path = `${userId}/avatar.${extension}`;
+      const { error: uploadError } = await admin.storage.from("profile-photos").upload(path, bytes, { contentType: match[1], upsert: true });
+      if (uploadError) throw uploadError;
+      const { error: updateError } = await admin.from("profiles").update({ avatar_path: path }).eq("id", userId);
+      if (updateError) throw updateError;
+      const { data: signed } = await admin.storage.from("profile-photos").createSignedUrl(path, 3600);
+      return json({ success: true, avatar_url: signed?.signedUrl ?? null });
+    }
+
     if (action === "list") {
       const { data, error } = await admin.from("profiles")
         .select("id,full_name,apartment,role,avatar_path,created_at")
