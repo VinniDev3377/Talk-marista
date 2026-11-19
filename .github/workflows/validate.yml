@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - fix/portaria-reservas-resumo-apartamentos
+      - feat/admin-perfis-fotos-desktop-ui
   pull_request:
     branches:
       - main
@@ -23,3 +23,11 @@ jobs:
         run: npm install
       - name: Verificar tipos e compilar
         run: npm run build
+      - name: Preparar pacote ZIP do código atualizado
+        run: zip -r talk-marista-codigo-atualizado.zip . -x ".git/*" "node_modules/*" "dist/*" ".vercel/*"
+      - name: Disponibilizar ZIP para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: talk-marista-codigo-atualizado
+          path: talk-marista-codigo-atualizado.zip
+          retention-days: 30
