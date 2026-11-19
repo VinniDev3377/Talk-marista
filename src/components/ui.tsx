@@ -254,3 +254,17 @@ export function PhotoPicker({ value, onChange }: { value?: string; onChange: (ph
     </div>
   );
 }
+
+/** Navegação superior compartilhada das principais áreas do morador. */
+const RESIDENT_TABS: { screen: Screen; label: string }[] = [
+  { screen: "home", label: "Resumo" },
+  { screen: "reservations", label: "Reservas" },
+  { screen: "visitors", label: "Visitantes" },
+  { screen: "workers", label: "Prestadores" },
+  { screen: "packages", label: "Encomendas" },
+];
+export function ResidentTopTabs({ active, nav }: { active: Screen; nav: Nav }) {
+  return <nav className="resident-top-tabs" aria-label="Navegação principal do morador">
+    {RESIDENT_TABS.map(tab => <button key={tab.screen} type="button" className={active === tab.screen ? "on" : ""} aria-current={active === tab.screen ? "page" : undefined} onClick={() => nav.tab(tab.screen)}>{tab.label}</button>)}
+  </nav>;
+}
