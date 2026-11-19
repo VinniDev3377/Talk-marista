@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Building2, Check, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench } from "lucide-react";
+import { Building2, Check , ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench } from "lucide-react";
 import { newId } from "../storage";
 import { Empty, Header, ListItem, LocalModeNotice, Modal, Section } from "../components/ui";
 import { cloudConfigured } from "../cloud/client";
