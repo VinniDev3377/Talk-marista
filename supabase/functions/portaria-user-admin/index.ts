@@ -120,9 +120,44 @@ Deno.serve(async (req) => {
       if (!userId || userId === callerData.user.id) return json({ error: "Não é permitido excluir a própria conta da Portaria." }, 400);
       const { data: target, error: targetError } = await admin.from("profiles").select("id,role").eq("id", userId).maybeSingle();
       if (targetError || !target || !["morador", "portaria"].includes(target.role)) return json({ error: "Cadastro não encontrado." }, 404);
+      if (target.role === "portaria") {
+        const { count, error: countError } = await admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", "portaria");
+        if (countError) throw countError;
+        if ((count ?? 0) <= 1) return json({ error: "Não é possível excluir a última conta da Portaria." }, 409);
+      }
+
+      // Preserva os registros históricos que aceitam autoria nula e remove apenas
+      // os registros operacionais cuja chave obrigatória pertence à conta excluída.
+      const nullUpdates = await Promise.all([
+        admin.from("apartment_invites").update({ claimed_by: null }).eq("claimed_by", userId),
+        admin.from("apartment_invites").update({ created_by: null }).eq("created_by", userId),
+        admin.from("moves").update({ reviewed_by: null }).eq("reviewed_by", userId),
+        admin.from("package_events").update({ actor_id: null }).eq("actor_id", userId),
+        admin.from("packages").update({ received_by: null }).eq("received_by", userId),
+        admin.from("packages").update({ withdrawn_by: null }).eq("withdrawn_by", userId),
+        admin.from("reservations").update({ reviewed_by: null }).eq("reviewed_by", userId),
+        admin.from("resident_registration_requests").update({ reviewed_by: null }).eq("reviewed_by", userId),
+        admin.from("service_requests").update({ handled_by: null }).eq("handled_by", userId),
+      ]);
+      const failedUpdate = nullUpdates.find(result => result.error);
+      if (failedUpdate?.error) throw failedUpdate.error;
+
+      const deleteOwned = await Promise.all([
+        admin.from("accesses").delete().eq("recorded_by", userId),
+        admin.from("family_members").delete().eq("created_by", userId),
+        admin.from("moves").delete().eq("requested_by", userId),
+        admin.from("reservations").delete().eq("created_by", userId),
+        admin.from("service_requests").delete().eq("created_by", userId),
+        admin.from("visitors").delete().eq("created_by", userId),
+        admin.from("workers").delete().eq("created_by", userId),
+      ]);
+      const failedDelete = deleteOwned.find(result => result.error);
+      if (failedDelete?.error) throw failedDelete.error;
+
       const { data: avatarFiles } = await admin.storage.from("profile-photos").list(userId);
       if (avatarFiles?.length) {
-        await admin.storage.from("profile-photos").remove(avatarFiles.map(file => `${userId}/${file.name}`));
+        const { error: photoError } = await admin.storage.from("profile-photos").remove(avatarFiles.map(file => `${userId}/${file.name}`));
+        if (photoError) throw photoError;
       }
       const { error } = await admin.auth.admin.deleteUser(userId);
       if (error) throw error;
