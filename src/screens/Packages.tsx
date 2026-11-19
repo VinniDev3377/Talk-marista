@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Package, Plus, Search, Trash2 } from "lucide-react";
 import { APARTMENTS, PACKAGE_KINDS, PACKAGE_SIZES } from "../constants";
 import { newId } from "../storage";
-import { Bottom, Chips, Empty, Header, Modal, PhotoPicker, ListItem } from "../components/ui";
+import { Bottom, Chips, Empty, Header, Modal, PhotoPicker, ListItem, ResidentTopTabs } from "../components/ui";
 import type { AddFn, PackageKind, PackageSize, ScreenProps, Delivery } from "../types";
 
 /**
