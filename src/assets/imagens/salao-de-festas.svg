@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" width="1400" height="900">
+  <!-- Ilustração local de apoio; a interface prioriza a fotografia remota quando disponível. -->
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c0449a"/><stop offset="1" stop-color="#2a0b3a"/></linearGradient></defs>
+  <rect width="1400" height="900" fill="url(#g)"/>
+  <circle cx="1275" cy="261" r="124" fill="#ffffff" fill-opacity="0.08"/>
+  <circle cx="1335" cy="542" r="33" fill="#ffffff" fill-opacity="0.08"/>
+  <circle cx="510" cy="664" r="36" fill="#ffffff" fill-opacity="0.05"/>
+  <circle cx="231" cy="380" r="90" fill="#ffffff" fill-opacity="0.05"/>
+  <circle cx="779" cy="556" r="43" fill="#ffffff" fill-opacity="0.12"/>
+  <circle cx="150" cy="160" r="14" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="280" cy="210" r="19" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="410" cy="260" r="24" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="540" cy="160" r="14" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="670" cy="210" r="19" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="800" cy="260" r="24" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="930" cy="160" r="14" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="1060" cy="210" r="19" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="1190" cy="260" r="24" fill="#ffe27a" fill-opacity=".85"/>
+  <circle cx="1320" cy="160" r="14" fill="#ffe27a" fill-opacity=".85"/>
+  <path d="M0 140 Q 350 260 700 140 T 1400 140" stroke="#ffffff" stroke-opacity=".5" stroke-width="3" fill="none"/>
+  <text x="1360" y="56" text-anchor="end" font-family="Arial, sans-serif" font-size="26" fill="#ffffff" fill-opacity=".55">Imagem provisória · troque por salao-de-festas.jpg</text>
+</svg>

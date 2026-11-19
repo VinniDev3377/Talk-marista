@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" width="1400" height="900">
+  <!-- Ilustração local de apoio; a interface prioriza a fotografia remota quando disponível. -->
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c0793a"/><stop offset="1" stop-color="#3a1d0a"/></linearGradient></defs>
+  <rect width="1400" height="900" fill="url(#g)"/>
+  <rect x="0" y="120" width="1400" height="64" fill="#000" fill-opacity="0.04"/>
+  <rect x="0" y="210" width="1400" height="64" fill="#000" fill-opacity="0.1"/>
+  <rect x="0" y="300" width="1400" height="64" fill="#000" fill-opacity="0.04"/>
+  <rect x="0" y="390" width="1400" height="64" fill="#000" fill-opacity="0.1"/>
+  <rect x="0" y="480" width="1400" height="64" fill="#000" fill-opacity="0.04"/>
+  <rect x="0" y="570" width="1400" height="64" fill="#000" fill-opacity="0.1"/>
+  <rect x="0" y="660" width="1400" height="64" fill="#000" fill-opacity="0.04"/>
+  <rect x="0" y="750" width="1400" height="64" fill="#000" fill-opacity="0.1"/>
+  <rect x="0" y="840" width="1400" height="64" fill="#000" fill-opacity="0.04"/>
+  <circle cx="663" cy="154" r="80" fill="#ffd9a0" fill-opacity="0.12"/>
+  <circle cx="98" cy="74" r="135" fill="#ffd9a0" fill-opacity="0.12"/>
+  <circle cx="192" cy="374" r="104" fill="#ffd9a0" fill-opacity="0.05"/>
+  <circle cx="1039" cy="219" r="34" fill="#ffd9a0" fill-opacity="0.05"/>
+  <circle cx="888" cy="428" r="38" fill="#ffd9a0" fill-opacity="0.05"/>
+  <circle cx="185" cy="564" r="84" fill="#ffd9a0" fill-opacity="0.05"/>
+  <circle cx="1158" cy="126" r="58" fill="#ffd9a0" fill-opacity="0.12"/>
+  <circle cx="1284" cy="596" r="37" fill="#ffd9a0" fill-opacity="0.12"/>
+  <circle cx="1199" cy="406" r="36" fill="#ffd9a0" fill-opacity="0.05"/>
+  <text x="1360" y="56" text-anchor="end" font-family="Arial, sans-serif" font-size="26" fill="#ffffff" fill-opacity=".55">Imagem provisória · troque por sauna.jpg</text>
+</svg>
