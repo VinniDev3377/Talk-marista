@@ -5,9 +5,9 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+as $$
   select role from public.profiles where id = auth.uid()
-$;
+$$;
 
 alter table public.profiles add column if not exists avatar_path text;
 
