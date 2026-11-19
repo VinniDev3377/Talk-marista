@@ -33,7 +33,8 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
   useEffect(() => {
     if (section !== "cadastros" || !cloudConfigured) return;
     let active = true;
-    listResidentRegistrationRequests().then(rows => { if (active) { setRegistrationRequests(rows); setRegistrationError(""); } })
+    Promise.all([listResidentRegistrationRequests(), managePortariaUsers({ action: "list" })])
+      .then(([rows, users]) => { if (active) { setRegistrationRequests(rows); setManagedUsers(users.users ?? []); setRegistrationError(""); } })
       .catch(err => { if (active) setRegistrationError(err instanceof Error ? err.message : "Falha ao carregar cadastros."); });
     return () => { active = false; };
   }, [section]);
@@ -120,6 +121,10 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
         {section === "moradores" && <ResidentsPanel {...{s, add, update, remove}} onAdd={() => setResidentOpen(true)} />}
         {section === "mudancas" && <MovesPanel s={s} update={update} />}
         {section === "cadastros" && <section className="management-section">
+          <button className="primary" onClick={() => setUserOpen(true)}><UserPlus /> CRIAR CADASTRO DE MORADOR OU PORTARIA</button>
+          {userError && <p className="error-note" role="alert">{userError}</p>}
+          <Section title="Contas cadastradas" subtitle="Moradores e equipe da Portaria" icon={<Users />} />
+          {managedUsers.map(user => <ListItem key={user.id} icon={<Users />} thumb={user.avatar_url ?? undefined} title={user.full_name} sub={user.role === "portaria" ? "Portaria" : `Morador · Apto ${user.apartment ?? "—"}`} action={<button className="mini warn" onClick={async () => { if (!window.confirm(`Excluir a conta de ${user.full_name}? O acesso será removido.`)) return; setUserError(""); try { await managePortariaUsers({ action: "delete", userId: user.id }); setManagedUsers(rows => rows.filter(row => row.id !== user.id)); } catch (err) { setUserError(err instanceof Error ? err.message : "Falha ao excluir conta."); } }}><Trash2 /> Excluir</button>} />)}
           <Section title="Cadastros aguardando aprovação" subtitle="Novos acessos de moradores" icon={<ShieldCheck />} />
           {!cloudConfigured && <p className="error-note">Conecte o Supabase para consultar os pedidos reais.</p>}
           {registrationError && <p className="error-note" role="alert">{registrationError}</p>}
