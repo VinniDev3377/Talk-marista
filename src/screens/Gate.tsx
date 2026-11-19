@@ -246,7 +246,7 @@ function PortariaUserModal({ onClose, onCreated, onError }: { onClose: () => voi
     {role === "morador" ? <label>Apartamento<select value={apartment} onChange={e => setApartment(e.target.value)}><option value="">Selecione</option>{APARTMENTS.map(a => <option key={a}>{a}</option>)}</select></label> : <label>E-mail de acesso<input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="off" /></label>}
     <label>Senha inicial<input type="password" value={password} onChange={e => setPassword(e.target.value)} minLength={8} autoComplete="new-password" /></label>
     <p className="muted">A senha deve ter pelo menos 8 caracteres. O morador usará nome completo e apartamento para entrar; a Portaria usará e-mail e senha.</p>
-    <div className="modal-actions"><button type="button" onClick={onClose}>Cancelar</button><button className="primary" disabled={busy || fullName.trim().split(/\\s+/).length < 2 || password.length < 8 || (role === "morador" ? !apartment : !email.includes("@"))} onClick={save}>{busy ? "CRIANDO..." : "CRIAR CONTA"}</button></div>
+    <div className="modal-actions"><button type="button" onClick={onClose}>Cancelar</button><button className="primary" disabled={busy || fullName.trim().split(/\s+/).length < 2 || password.length < 8 || (role === "morador" ? !apartment : !email.includes("@"))} onClick={save}>{busy ? "CRIANDO..." : "CRIAR CONTA"}</button></div>
   </Modal>;
 }
 
