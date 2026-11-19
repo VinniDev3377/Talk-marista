@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Building2, Check , ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench } from "lucide-react";
+import { Building2, CalendarDays, Check, ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench } from "lucide-react";
 import { newId } from "../storage";
 import { Empty, Header, ListItem, LocalModeNotice, Modal, Section } from "../components/ui";
 import { cloudConfigured } from "../cloud/client";
@@ -48,6 +48,7 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
   const pending = s.accesses.filter((a) => a.status === "Aguardando").length;
   const waitingPackages = s.packages.filter((p) => p.status === "Recebida").length;
   const pendingMoves = s.moves.filter((m) => m.status === "Aguardando aprovação").length;
+  const pendingReservations = s.reservations.filter((r) => r.status === "Aguardando aprovação").length;
 
   /** Libera a entrada de um visitante e registra no histórico. */
   const authorize = (visitor: Visitor) =>
@@ -81,9 +82,15 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
           <div><Package /><b>{waitingPackages}</b><small>Encomendas</small></div>
           <div><Users /><b>{s.visitors.length}</b><small>Visitantes</small></div>
           <div><Wrench /><b>{s.workers.filter((worker) => worker.active).length}</b><small>Equipe ativa</small></div>
+          <div><CalendarDays /><b>{pendingReservations}</b><small>Reservas pendentes</small></div>
         </div>
 
         <button className="primary gate-action" onClick={() => nav.go("packages")}><Package /> ENCOMENDAS</button>
+        <div className="gate-shortcuts" aria-label="Acesso rápido da portaria">
+          <button type="button" onClick={() => nav.go("reservations")}><CalendarDays /> Reservas</button>
+          <button type="button" onClick={() => nav.go("visitors")}><Users /> Visitantes</button>
+          <button type="button" onClick={() => nav.go("workers")}><Wrench /> Prestadores</button>
+        </div>
 
         <div className="search">
           <Search />
@@ -136,19 +143,24 @@ function ResidentsPanel({ s, add, update, remove, onAdd }: Pick<ScreenProps, "s"
   const workers = selectedApartment ? s.workers.filter((person) => person.apartment === selectedApartment) : [];
   const visitors = selectedApartment ? s.visitors.filter((person) => person.apartment === selectedApartment) : [];
   const hasPeople = residents.length + family.length + workers.length + visitors.length > 0;
+  const peopleCount = (apartment: string) => s.residents.filter((p) => p.apartment === apartment).length
+    + s.family.filter((p) => p.apartment === apartment).length
+    + s.workers.filter((p) => p.apartment === apartment && p.active).length;
 
   return <section className="management-section">
     <div className="search"><Search /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar apartamento" /></div>
     <div className="apartment-grid gate-apartment-grid">
       {list.map((apartment) => <button type="button" key={apartment} className="gate-apartment-card" onClick={() => setSelectedApartment(apartment)} aria-label={`Abrir apartamento ${apartment}`}>
-        <div className="apt-number"><Building2 /></div><b>{apartment}</b><ChevronRight />
+        <div className="apt-number"><Building2 /></div><b>{apartment}</b><small className="apartment-count">{peopleCount(apartment)} pessoas cadastradas</small><ChevronRight />
       </button>)}
     </div>
     {!list.length && <Empty text="Nenhum apartamento encontrado." />}
     {selectedApartment && <Modal title={`Apartamento ${selectedApartment}`} close={() => setSelectedApartment(null)}>
       <div className="apartment-people-list">
         <Section title="Moradores" subtitle="Pessoas vinculadas" icon={<Users />} />
-        {residents.map((person) => <ResidentRow key={`resident-${person.id}`} resident={person} update={update} remove={remove} />)}
+        {residents.map((person) => cloudConfigured
+          ? <ListItem key={`resident-${person.id}`} icon={<Users />} title={person.name} sub={`Morador · Apto ${person.apartment}`} />
+          : <ResidentRow key={`resident-${person.id}`} resident={person} update={update} remove={remove} />)}
         <Section title="Familiares" subtitle="Vínculos familiares" icon={<Users />} />
         {family.map((person) => <ListItem key={`family-${person.id}`} icon={<Users />} title={person.name} sub={person.relation} />)}
         <Section title="Funcionários e prestadores" subtitle="Pessoas autorizadas" icon={<Wrench />} />
@@ -158,7 +170,7 @@ function ResidentsPanel({ s, add, update, remove, onAdd }: Pick<ScreenProps, "s"
         {!hasPeople && <Empty text="Ainda não há pessoas cadastradas neste apartamento." />}
       </div>
     </Modal>}
-    <button className="primary" onClick={onAdd}>Cadastrar morador</button>
+    {!cloudConfigured && <button className="primary" onClick={onAdd}>Cadastrar morador</button>}
   </section>;
 }
 
