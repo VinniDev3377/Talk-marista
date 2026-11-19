@@ -4,7 +4,7 @@ import { Bottom, Logo, PhotoPicker } from "../components/ui";
 import { supabase, managePortariaUsers } from "../cloud";
 import type { Screen, ScreenProps } from "../types";
 
-function ProfilePhotoEditor() {
+export function ProfilePhotoEditor() {
   const [userId, setUserId] = useState("");
   const [photo, setPhoto] = useState<string>();
   const [current, setCurrent] = useState<string>();
