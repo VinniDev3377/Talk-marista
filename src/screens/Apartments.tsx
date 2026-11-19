@@ -11,8 +11,9 @@ import type { ScreenProps } from "../types";
 export function Apartments({ s, nav }: Pick<ScreenProps, "s" | "nav">) {
   const [query, setQuery] = useState("");
   const list = APARTMENTS.filter((a) => a.includes(query));
-  const movements = (apt: string) =>
-    s.visitors.filter((v) => v.apartment === apt).length + s.packages.filter((p) => p.apartment === apt).length;
+  const people = (apt: string) => s.residents.filter((p) => p.apartment === apt).length
+    + s.family.filter((p) => p.apartment === apt).length
+    + s.workers.filter((p) => p.apartment === apt && p.active).length;
 
   return (
     <div className="screen app">
@@ -24,10 +25,10 @@ export function Apartments({ s, nav }: Pick<ScreenProps, "s" | "nav">) {
         </div>
         <div className="apartment-grid">
           {list.map((a) => (
-            <button key={a}>
+            <button key={a} type="button">
               <div className="apt-number"><Building2 /></div>
               <b>{a}</b>
-              <small>{movements(a)} movimentações</small>
+              <small>{people(a)} pessoas cadastradas</small>
               <ChevronRight />
             </button>
           ))}
