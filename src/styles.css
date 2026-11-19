@@ -1524,7 +1524,7 @@ button:active { transform: scale(.985); }
   .app .content input, .app .content select, .app .content textarea,
   .app .modal input, .app .modal select, .app .modal textarea { min-height: 52px; font-size: 16px; padding: 12px 14px; }
   .app .primary, .app .mini, .app .photo-btn, .app .chip { min-height: 44px; font-size: 15px; }
-  .app .section > svg { width: 27px; height: 27px; }
+  .app .section > svg { width: 27px; height: 27px; }\n  .app .content button svg { width: 21px; height: 21px; }
   .app .record > div > svg, .app .record > div:not(.thumb) svg { width: 23px; height: 23px; }
   .app .record { padding: 16px 18px; gap: 14px; }
   .app .record b, .app .management-row b { font-size: 16px; }
