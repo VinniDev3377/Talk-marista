@@ -34,9 +34,10 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
   useEffect(() => {
     if (!cloudConfigured) return;
     let active = true;
-    Promise.all([listResidentRegistrationRequests(), managePortariaUsers({ action: "list" })])
-      .then(([rows, users]) => { if (active) { setRegistrationRequests(rows); setManagedUsers(users.users ?? []); setRegistrationError(""); } })
-      .catch(err => { if (active) setRegistrationError(err instanceof Error ? err.message : "Falha ao carregar cadastros."); });
+    void listResidentRegistrationRequests().then(rows => { if (active) { setRegistrationRequests(rows); setRegistrationError(""); } })
+      .catch(err => { if (active) setRegistrationError(err instanceof Error ? err.message : "Falha ao carregar pedidos."); });
+    void managePortariaUsers({ action: "list" }).then(result => { if (active) setManagedUsers(result.users ?? []); })
+      .catch(err => { if (active) setUserError(err instanceof Error ? err.message : "Falha ao carregar contas."); });
     return () => { active = false; };
   }, []);
 
