@@ -1,7 +1,8 @@
 /** MÓDULO: Gerencia o estado global, a autenticação local/nuvem e a navegação entre telas. */
 import { useEffect, useState } from "react";
 import "./styles.css";
-import { cloudConfigured, useAuth } from "./cloud";
+import { cloudConfigured, useAuth, supabase } from "./cloud";
+import { subscribeTable } from "./cloud/repositories";
 import { deleteCloudRecord, insertCloudRecord, loadCloudAppData, updateCloudRecord } from "./cloud/appData";
 import { HOME_SCREEN } from "./constants";
 import { loadState, saveState } from "./storage";
@@ -36,6 +37,20 @@ export default function App() {
   const screen = history[history.length - 1];
 
   useEffect(() => saveState(s), [s]);
+
+  // Mantém os painéis sincronizados quando a Portaria ou moradores alteram dados na nuvem.
+  useEffect(() => {
+    if (!cloudConfigured || !supabase || !s.loggedIn) return;
+    let active = true;
+    const refresh = () => {
+      void loadCloudAppData(s.apartment, s.role).then((cloudData) => {
+        if (active) setS((prev) => ({ ...prev, ...cloudData }));
+      }).catch((error) => console.warn("Falha ao atualizar dados em tempo real:", error));
+    };
+    const stop = ["profiles", "visitors", "family_members", "workers", "packages", "accesses", "reservations", "moves"]
+      .map((table) => subscribeTable(table, refresh));
+    return () => { active = false; stop.forEach((unsubscribe) => unsubscribe()); };
+  }, [s.loggedIn, s.apartment, s.role]);
 
   /* ---------- Sessão ---------- */
 
