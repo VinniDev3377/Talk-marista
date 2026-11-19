@@ -174,7 +174,7 @@ export function Chips<T extends string>({ label, options, value, onChange }: {
  * @param value — imagem atual em Data URL, quando já existe.
  * @param onChange — callback que recebe a imagem comprimida ou undefined ao removê-la.
  */
-export function PhotoPicker({ value, onChange }: { value?: string; onChange: (photo?: string) => void }) {
+export function PhotoPicker({ value, onChange, label = "Foto" }: { value?: string; onChange: (photo?: string) => void; label?: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -235,9 +235,9 @@ export function PhotoPicker({ value, onChange }: { value?: string; onChange: (ph
 
   return (
     <div className="field">
-      <span>Foto da encomenda</span>
+      <span>{label}</span>
       <div className="photo-picker">
-        {value ? <img src={value} alt="Foto da encomenda" /> : <div className="photo-empty"><Camera /><small>Nenhuma foto</small></div>}
+        {value ? <img src={value} alt={label} /> : <div className="photo-empty"><Camera /><small>Nenhuma foto</small></div>}
         <div className="photo-actions">
           <button type="button" className="photo-btn" onClick={() => setCameraOpen(true)}><Camera /> {value ? "Usar webcam" : "Abrir webcam"}</button>
           <button type="button" className="photo-btn ghost" onClick={() => inputRef.current?.click()}><Camera /> Escolher foto</button>
