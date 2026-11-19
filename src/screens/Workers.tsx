@@ -34,6 +34,7 @@ export function Workers({ s, add, remove, nav }: ScreenProps) {
             title={x.name}
             sub={`${x.type} · ${x.company || "Sem empresa"}${isResident ? "" : ` · Apto ${x.apartment}`}`}
             status={x.active ? "Ativo" : "Inativo"}
+            action={isGate ? <button className="mini warn" onClick={() => { if (window.confirm(`Excluir o cadastro de ${x.name}?`)) remove("workers", x.id); }}><Trash2 /> Excluir</button> : undefined}
           />
         ))}
         {!rows.length && <Empty text="Nenhum cadastro encontrado." />}
