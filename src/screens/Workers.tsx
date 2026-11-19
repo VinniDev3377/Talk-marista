@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, Wrench } from "lucide-react";
 import { newId } from "../storage";
 import { APARTMENTS } from "../constants";
-import { Bottom, Empty, Header, Modal, ListItem } from "../components/ui";
+import { Bottom, Empty, Header, Modal, ListItem, ResidentTopTabs } from "../components/ui";
 import type { AddFn, ScreenProps } from "../types";
 
 /** Funcionários e prestadores autorizados. Morador vê os seus; admin vê todos. 
@@ -24,7 +24,7 @@ export function Workers({ s, add, nav }: ScreenProps) {
         back={nav.back}
         action={canManage && <button className="add" onClick={() => setOpen(true)}><Plus /></button>}
       />
-      <main className="content">
+      {!isGate && <ResidentTopTabs active="workers" nav={nav} />}\n      <main className="content">
         <div className="info"><Wrench /><span>Controle pessoas autorizadas a prestar serviços.</span></div>
         {rows.map((x) => (
           <ListItem
