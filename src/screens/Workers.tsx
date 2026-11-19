@@ -24,7 +24,8 @@ export function Workers({ s, add, nav }: ScreenProps) {
         back={nav.back}
         action={canManage && <button className="add" onClick={() => setOpen(true)}><Plus /></button>}
       />
-      {!isGate && <ResidentTopTabs active="workers" nav={nav} />}\n      <main className="content">
+      {!isGate && <ResidentTopTabs active="workers" nav={nav} />}
+      <main className="content">
         <div className="info"><Wrench /><span>Controle pessoas autorizadas a prestar serviços.</span></div>
         {rows.map((x) => (
           <ListItem
