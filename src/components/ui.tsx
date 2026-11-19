@@ -174,7 +174,7 @@ export function Chips<T extends string>({ label, options, value, onChange }: {
  * @param value — imagem atual em Data URL, quando já existe.
  * @param onChange — callback que recebe a imagem comprimida ou undefined ao removê-la.
  */
-export function PhotoPicker({ value, onChange, label = "Foto" }: { value?: string; onChange: (photo?: string) => void; label?: string }) {
+export function PhotoPicker({ value, onChange, label = "Foto da encomenda" }: { value?: string; onChange: (photo?: string) => void; label?: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
