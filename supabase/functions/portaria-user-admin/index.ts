@@ -28,13 +28,15 @@ Deno.serve(async (req) => {
   if (callerError || !callerData.user) return json({ error: "Sessão inválida." }, 401);
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: callerProfile, error: profileError } = await admin.from("profiles")
-    .select("id,role").eq("id", callerData.user.id).maybeSingle();
-  if (profileError || callerProfile?.role !== "portaria") return json({ error: "Apenas a Portaria pode administrar contas." }, 403);
 
   try {
     const body = await req.json();
     const action = String(body.action ?? "");
+    const { data: callerProfile, error: profileError } = await admin.from("profiles")
+      .select("id,role").eq("id", callerData.user.id).maybeSingle();
+    const isPortaria = !profileError && callerProfile?.role === "portaria";
+    const isOwnPhoto = action === "update-avatar" && String(body.userId ?? "") === callerData.user.id;
+    if (!isPortaria && !isOwnPhoto) return json({ error: "Apenas a Portaria pode administrar contas." }, 403);
 
     if (action === "update-avatar") {
       const userId = String(body.userId ?? "");
