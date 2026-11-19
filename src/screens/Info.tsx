@@ -64,7 +64,7 @@ export function Info({ kind, nav }: { kind: InfoKind; nav: Nav }) {
     let active = true;
     listServiceRequests(auth.profile.role === "portaria" ? undefined : auth.profile.apartment ?? "")
       .then(({ data, error }) => { if (error) throw error; if (active) { setServiceRows(data ?? []); setServiceError(""); } })
-      .catch(error => { if (active) setServiceError(error instanceof Error ? error.message : "Não foi possível carregar os pedidos."); });
+     , (error: unknown) => { if (active) setServiceError(error instanceof Error ? error.message : "Não foi possível carregar os pedidos."); });
     return () => { active = false; };
   }, [kind, auth.profile]);
 
