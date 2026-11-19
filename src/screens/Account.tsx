@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ChevronRight, CircleUserRound, FileText, KeyRound, ShieldCheck, Users } from "lucide-react";
-import { Bottom, Logo, PhotoPicker } from "../components/ui";\nimport { supabase, managePortariaUsers } from "../cloud";
+import { Bottom, Logo, PhotoPicker } from "../components/ui";
+import { supabase, managePortariaUsers } from "../cloud";
 import type { Screen, ScreenProps } from "../types";
 
 function ProfilePhotoEditor() {
