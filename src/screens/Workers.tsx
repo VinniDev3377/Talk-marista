@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Wrench } from "lucide-react";
+import { Plus, Wrench, Trash2 } from "lucide-react";
 import { newId } from "../storage";
 import { APARTMENTS } from "../constants";
 import { Bottom, Empty, Header, Modal, ListItem, ResidentTopTabs } from "../components/ui";
@@ -10,7 +10,7 @@ import type { AddFn, ScreenProps } from "../types";
  * @param add — função que registra uma nova pessoa autorizada.
  * @param nav — comandos de navegação entre telas.
  */
-export function Workers({ s, add, nav }: ScreenProps) {
+export function Workers({ s, add, remove, nav }: ScreenProps) {
   const [open, setOpen] = useState(false);
   const isResident = s.role === "morador";
   const isGate = s.role === "portaria";
