@@ -31,7 +31,8 @@ export function Home({ s, nav }: Pick<ScreenProps, "s" | "nav">) {
         <Logo small />
         <button className="icon-btn" onClick={() => nav.go("communications")} aria-label="Comunicados"><Bell /></button>
       </div>
-      <ResidentTopTabs active="home" nav={nav} />\n      <main className="content">
+      <ResidentTopTabs active="home" nav={nav} />
+      <main className="content">
         <section className="hello">
           <div>
             <small>Olá, {s.userName}</small>
