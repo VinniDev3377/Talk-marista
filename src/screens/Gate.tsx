@@ -6,6 +6,7 @@ import { cloudConfigured } from "../cloud/client";
 import type { ScreenProps, Visitor, Resident, MoveRequest } from "../types";
 import { APARTMENTS } from "../constants";
 import { listResidentRegistrationRequests, reviewResidentRegistration, managePortariaUsers, type RegistrationRequest, type ManagedProfile } from "../cloud";
+import { ProfilePhotoEditor } from "./Account";
 
 /**
  * Painel da portaria: controle de acesso, visitantes e atalho para encomendas.
