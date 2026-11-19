@@ -74,6 +74,10 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
         <button className={section === "moradores" ? "on" : ""} onClick={() => setSection("moradores")}>Moradores</button>
         <button className={section === "mudancas" ? "on" : ""} onClick={() => setSection("mudancas")}>Mudanças {pendingMoves ? `(${pendingMoves})` : ""}</button>
         <button className={section === "cadastros" ? "on" : ""} onClick={() => setSection("cadastros")}>Cadastros</button>
+        <button type="button" onClick={() => nav.go("reservations")}>Reservas</button>
+        <button type="button" onClick={() => nav.go("visitors")}>Visitantes</button>
+        <button type="button" onClick={() => nav.go("workers")}>Prestadores</button>
+        <button type="button" onClick={() => nav.go("packages")}>Encomendas</button>
       </nav>
       <main className="content">
         {section === "painel" && <>
