@@ -29,7 +29,8 @@ export function Reservations({ s, add, update, nav }: ScreenProps) {
 
   return (
     <div className="screen app">
-      <Header title="Reservas" back={nav.back} />\n      {!isGate && <ResidentTopTabs active="reservations" nav={nav} />}
+      <Header title="Reservas" back={nav.back} />
+      {!isGate && <ResidentTopTabs active="reservations" nav={nav} />}
       <main className="content">
         <Section title="Agende seu espaço" subtitle="Próximas reservas" icon={<CalendarDays />} />
         <LocalModeNotice />
