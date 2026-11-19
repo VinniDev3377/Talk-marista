@@ -4,7 +4,7 @@ import {
   Sparkles, Users, Wrench, Truck,
 } from "lucide-react";
 import { BUILDING_IMAGE } from "../constants";
-import { Action, Bottom, LocalModeNotice, Logo } from "../components/ui";
+import { Action, Bottom, LocalModeNotice, Logo, ResidentTopTabs } from "../components/ui";
 import type { Screen, ScreenProps } from "../types";
 
 /** Atalhos do painel do morador. Para incluir um novo, basta adicionar uma linha. */
@@ -31,6 +31,7 @@ export function Home({ s, nav }: Pick<ScreenProps, "s" | "nav">) {
         <Logo small />
         <button className="icon-btn" onClick={() => nav.go("communications")} aria-label="Comunicados"><Bell /></button>
       </div>
+      <ResidentTopTabs active="home" nav={nav} />
       <main className="content">
         <section className="hello">
           <div>

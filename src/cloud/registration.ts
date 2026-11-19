@@ -29,3 +29,12 @@ export function residentLoginEmail(fullName: string, apartment: string) {
   const slug = fullName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return `morador-${apartment}-${slug}@talkmarista.invalid`;
 }
+
+export interface ManagedProfile { id: string; full_name: string; apartment: string | null; role: "morador" | "portaria"; avatar_url: string | null; created_at: string }
+export async function managePortariaUsers(input: Record<string, unknown>) {
+  if (!supabase) throw new Error("Conexão com o Supabase não configurada.");
+  const { data, error } = await supabase.functions.invoke("portaria-user-admin", { body: input });
+  if (error) throw new Error(error.message || "Não foi possível administrar o cadastro.");
+  if (data?.error) throw new Error(data.error);
+  return data;
+}

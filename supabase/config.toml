@@ -1,0 +1,4 @@
+project_id = "zzwtmbhguccwhkcuxoyk"
+
+[functions.portaria-user-admin]
+verify_jwt = true

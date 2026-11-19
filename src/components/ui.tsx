@@ -174,7 +174,7 @@ export function Chips<T extends string>({ label, options, value, onChange }: {
  * @param value — imagem atual em Data URL, quando já existe.
  * @param onChange — callback que recebe a imagem comprimida ou undefined ao removê-la.
  */
-export function PhotoPicker({ value, onChange }: { value?: string; onChange: (photo?: string) => void }) {
+export function PhotoPicker({ value, onChange, label = "Foto da encomenda" }: { value?: string; onChange: (photo?: string) => void; label?: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -235,15 +235,15 @@ export function PhotoPicker({ value, onChange }: { value?: string; onChange: (ph
 
   return (
     <div className="field">
-      <span>Foto da encomenda</span>
+      <span>{label}</span>
       <div className="photo-picker">
-        {value ? <img src={value} alt="Foto da encomenda" /> : <div className="photo-empty"><Camera /><small>Nenhuma foto</small></div>}
+        {value ? <img src={value} alt={label} /> : <div className="photo-empty"><Camera /><small>Nenhuma foto</small></div>}
         <div className="photo-actions">
           <button type="button" className="photo-btn" onClick={() => setCameraOpen(true)}><Camera /> {value ? "Usar webcam" : "Abrir webcam"}</button>
           <button type="button" className="photo-btn ghost" onClick={() => inputRef.current?.click()}><Camera /> Escolher foto</button>
           {value && <button type="button" className="photo-btn ghost" onClick={() => onChange(undefined)}><Trash2 /> Remover</button>}
         </div>
-        <input ref={inputRef} type="file" accept="image/*" capture="environment" hidden onChange={handleFile} />
+        <input ref={inputRef} type="file" accept="image/*" hidden onChange={handleFile} />
       </div>
       {cameraOpen && <div className="camera-panel">
         <video ref={videoRef} autoPlay playsInline muted aria-label="Prévia da webcam" />
@@ -253,4 +253,18 @@ export function PhotoPicker({ value, onChange }: { value?: string; onChange: (ph
       {error && <p className="error-note" role="alert">{error}</p>}
     </div>
   );
+}
+
+/** Navegação superior compartilhada das principais áreas do morador. */
+const RESIDENT_TABS: { screen: Screen; label: string }[] = [
+  { screen: "home", label: "Resumo" },
+  { screen: "reservations", label: "Reservas" },
+  { screen: "visitors", label: "Visitantes" },
+  { screen: "workers", label: "Prestadores" },
+  { screen: "packages", label: "Encomendas" },
+];
+export function ResidentTopTabs({ active, nav }: { active: Screen; nav: Nav }) {
+  return <nav className="resident-top-tabs" aria-label="Navegação principal do morador">
+    {RESIDENT_TABS.map(tab => <button key={tab.screen} type="button" className={active === tab.screen ? "on" : ""} aria-current={active === tab.screen ? "page" : undefined} onClick={() => nav.tab(tab.screen)}>{tab.label}</button>)}
+  </nav>;
 }

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Building2, CalendarDays, Check, ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench } from "lucide-react";
+import { Building2, CalendarDays, Check, ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench, Trash2, UserPlus } from "lucide-react";
 import { newId } from "../storage";
-import { Empty, Header, ListItem, LocalModeNotice, Modal, Section } from "../components/ui";
+import { Empty, Header, ListItem, LocalModeNotice, Modal, Section, PhotoPicker } from "../components/ui";
 import { cloudConfigured } from "../cloud/client";
 import type { ScreenProps, Visitor, Resident, MoveRequest } from "../types";
 import { APARTMENTS } from "../constants";
-import { listResidentRegistrationRequests, reviewResidentRegistration, type RegistrationRequest } from "../cloud";
+import { listResidentRegistrationRequests, reviewResidentRegistration, managePortariaUsers, type RegistrationRequest, type ManagedProfile } from "../cloud";
+import { ProfilePhotoEditor } from "./Account";
 
 /**
  * Painel da portaria: controle de acesso, visitantes e atalho para encomendas.
@@ -24,16 +25,21 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
   const [registrationError, setRegistrationError] = useState("");
   const [reviewBusy, setReviewBusy] = useState("");
   const [residentOpen, setResidentOpen] = useState(false);
+  const [userOpen, setUserOpen] = useState(false);
+  const [managedUsers, setManagedUsers] = useState<ManagedProfile[]>([]);
+  const [userError, setUserError] = useState("");
   const q = query.trim().toLowerCase();
 
   // Busca a fila somente quando a Portaria abre a aba de cadastros pendentes.
   useEffect(() => {
-    if (section !== "cadastros" || !cloudConfigured) return;
+    if (!cloudConfigured) return;
     let active = true;
-    listResidentRegistrationRequests().then(rows => { if (active) { setRegistrationRequests(rows); setRegistrationError(""); } })
-      .catch(err => { if (active) setRegistrationError(err instanceof Error ? err.message : "Falha ao carregar cadastros."); });
+    void listResidentRegistrationRequests().then(rows => { if (active) { setRegistrationRequests(rows); setRegistrationError(""); } })
+      .catch(err => { if (active) setRegistrationError(err instanceof Error ? err.message : "Falha ao carregar pedidos."); });
+    void managePortariaUsers({ action: "list" }).then(result => { if (active) setManagedUsers(result.users ?? []); })
+      .catch(err => { if (active) setUserError(err instanceof Error ? err.message : "Falha ao carregar contas."); });
     return () => { active = false; };
-  }, [section]);
+  }, []);
 
   const reviewRegistration = async (id: string, decision: "approve" | "reject") => {
     setReviewBusy(id); setRegistrationError("");
@@ -68,7 +74,11 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
         <button className={section === "painel" ? "on" : ""} onClick={() => setSection("painel")}>Resumo</button>
         <button className={section === "moradores" ? "on" : ""} onClick={() => setSection("moradores")}>Moradores</button>
         <button className={section === "mudancas" ? "on" : ""} onClick={() => setSection("mudancas")}>Mudanças {pendingMoves ? `(${pendingMoves})` : ""}</button>
-        <button className={section === "cadastros" ? "on" : ""} onClick={() => setSection("cadastros")}>Cadastros</button>
+        <button className={section === "cadastros" ? "on" : ""} onClick={() => setSection("cadastros")}>Cadastros {registrationRequests.length ? `(${registrationRequests.length})` : ""}</button>
+        <button type="button" onClick={() => nav.go("reservations")}>Reservas</button>
+        <button type="button" onClick={() => nav.go("visitors")}>Visitantes</button>
+        <button type="button" onClick={() => nav.go("workers")}>Prestadores</button>
+        <button type="button" onClick={() => nav.go("packages")}>Encomendas</button>
       </nav>
       <main className="content">
         {section === "painel" && <>
@@ -85,7 +95,15 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
           <div><CalendarDays /><b>{pendingReservations}</b><small>Reservas pendentes</small></div>
         </div>
 
-        <button className="primary gate-action" onClick={() => nav.go("packages")}><Package /> ENCOMENDAS</button>
+        {registrationRequests.length > 0 && <section className="management-section pending-registrations">
+          <Section title="Aprovação necessária" subtitle="Novos cadastros de moradores" icon={<ShieldCheck />} />
+          {registrationRequests.map(request => <div className="management-row" key={request.id}>
+            <div><b>{request.full_name}</b><small>Apartamento {request.apartment} · {new Date(request.created_at).toLocaleString("pt-BR")}</small></div>
+            <button className="mini" disabled={reviewBusy === request.id} onClick={() => reviewRegistration(request.id, "approve")}>{reviewBusy === request.id ? "Aguarde..." : "Aprovar"}</button>
+            <button className="mini warn" disabled={reviewBusy === request.id} onClick={() => reviewRegistration(request.id, "reject")}>Recusar</button>
+          </div>)}
+        </section>}
+                <button className="primary gate-action" onClick={() => nav.go("packages")}><Package /> ENCOMENDAS</button>
         <div className="gate-shortcuts" aria-label="Acesso rápido da portaria">
           <button type="button" onClick={() => nav.go("reservations")}><CalendarDays /> Reservas</button>
           <button type="button" onClick={() => nav.go("visitors")}><Users /> Visitantes</button>
@@ -117,6 +135,11 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
         {section === "moradores" && <ResidentsPanel {...{s, add, update, remove}} onAdd={() => setResidentOpen(true)} />}
         {section === "mudancas" && <MovesPanel s={s} update={update} />}
         {section === "cadastros" && <section className="management-section">
+          <ProfilePhotoEditor />
+          <button className="primary" onClick={() => setUserOpen(true)}><UserPlus /> CRIAR CADASTRO DE MORADOR OU PORTARIA</button>
+          {userError && <p className="error-note" role="alert">{userError}</p>}
+          <Section title="Contas cadastradas" subtitle="Moradores e equipe da Portaria" icon={<Users />} />
+          {managedUsers.map(user => <ListItem key={user.id} icon={<Users />} thumb={user.avatar_url ?? undefined} title={user.full_name} sub={user.role === "portaria" ? "Portaria" : `Morador · Apto ${user.apartment ?? "—"}`} action={<button className="mini warn" onClick={async () => { if (!window.confirm(`Excluir a conta de ${user.full_name}? O acesso será removido.`)) return; setUserError(""); try { await managePortariaUsers({ action: "delete", userId: user.id }); setManagedUsers(rows => rows.filter(row => row.id !== user.id)); } catch (err) { setUserError(err instanceof Error ? err.message : "Falha ao excluir conta."); } }}><Trash2 /> Excluir</button>} />)}
           <Section title="Cadastros aguardando aprovação" subtitle="Novos acessos de moradores" icon={<ShieldCheck />} />
           {!cloudConfigured && <p className="error-note">Conecte o Supabase para consultar os pedidos reais.</p>}
           {registrationError && <p className="error-note" role="alert">{registrationError}</p>}
@@ -128,6 +151,7 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
           {!registrationRequests.length && !registrationError && cloudConfigured && <Empty text="Nenhum cadastro aguardando aprovação." />}
         </section>}
         {residentOpen && <ResidentModal add={add} close={() => setResidentOpen(false)} />}
+        {userOpen && <PortariaUserModal onClose={() => setUserOpen(false)} onCreated={user => setManagedUsers(rows => [...rows, user].sort((a,b) => a.full_name.localeCompare(b.full_name)))} onError={setUserError} />}
         <button className="danger" onClick={onLogout}>Sair da portaria</button>
       </main>
     </div>
@@ -160,7 +184,7 @@ function ResidentsPanel({ s, add, update, remove, onAdd }: Pick<ScreenProps, "s"
       <div className="apartment-people-list">
         <Section title="Moradores" subtitle="Pessoas vinculadas" icon={<Users />} />
         {residents.map((person) => cloudConfigured
-          ? <ListItem key={`resident-${person.id}`} icon={<Users />} title={person.name} sub={`Morador · Apto ${person.apartment}`} />
+          ? <ListItem key={`resident-${person.id}`} icon={<Users />} thumb={person.avatarUrl} title={person.name} sub={`Morador · Apto ${person.apartment}`} />
           : <ResidentRow key={`resident-${person.id}`} resident={person} update={update} remove={remove} />)}
         <Section title="Familiares" subtitle="Vínculos familiares" icon={<Users />} />
         {family.map((person) => <ListItem key={`family-${person.id}`} icon={<Users />} title={person.name} sub={person.relation} />)}
@@ -196,6 +220,34 @@ function ResidentModal({ add, close }: { add: ScreenProps["add"]; close: () => v
     <label>Telefone<input value={phone} onChange={(e) => setPhone(e.target.value)} /></label>
     <div className="modal-actions"><button type="button" onClick={close}>Cancelar</button><button className="primary" type="submit">Salvar morador</button></div>
   </form></div>;
+}
+
+function PortariaUserModal({ onClose, onCreated, onError }: { onClose: () => void; onCreated: (user: ManagedProfile) => void; onError: (message: string) => void }) {
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<"morador" | "portaria">("morador");
+  const [apartment, setApartment] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [photo, setPhoto] = useState<string>();
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    setBusy(true); onError("");
+    try {
+      const result = await managePortariaUsers({ action: "create", fullName, role, apartment, email, password, photo });
+      onCreated({ id: result.id, full_name: result.fullName, apartment: result.apartment, role: result.role, avatar_url: result.avatar_url ?? null, created_at: new Date().toISOString() });
+      onClose();
+    } catch (error) { onError(error instanceof Error ? error.message : "Não foi possível criar a conta."); }
+    finally { setBusy(false); }
+  };
+  return <Modal title="Criar conta de acesso" close={onClose}>
+    <PhotoPicker label="Foto do perfil" value={photo} onChange={setPhoto} />
+    <label>Nome completo<input value={fullName} onChange={e => setFullName(e.target.value)} autoComplete="name" /></label>
+    <label>Tipo de conta<select value={role} onChange={e => setRole(e.target.value as "morador" | "portaria")}><option value="morador">Morador</option><option value="portaria">Portaria</option></select></label>
+    {role === "morador" ? <label>Apartamento<select value={apartment} onChange={e => setApartment(e.target.value)}><option value="">Selecione</option>{APARTMENTS.map(a => <option key={a}>{a}</option>)}</select></label> : <label>E-mail de acesso<input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="off" /></label>}
+    <label>Senha inicial<input type="password" value={password} onChange={e => setPassword(e.target.value)} minLength={8} autoComplete="new-password" /></label>
+    <p className="muted">A senha deve ter pelo menos 8 caracteres. O morador usará nome completo e apartamento para entrar; a Portaria usará e-mail e senha.</p>
+    <div className="modal-actions"><button type="button" onClick={onClose}>Cancelar</button><button className="primary" disabled={busy || fullName.trim().split(/\s+/).length < 2 || password.length < 8 || (role === "morador" ? !apartment : !email.includes("@"))} onClick={save}>{busy ? "CRIANDO..." : "CRIAR CONTA"}</button></div>
+  </Modal>;
 }
 
 function MovesPanel({ s, update }: Pick<ScreenProps, "s" | "update">) {
