@@ -122,6 +122,7 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
         {section === "moradores" && <ResidentsPanel {...{s, add, update, remove}} onAdd={() => setResidentOpen(true)} />}
         {section === "mudancas" && <MovesPanel s={s} update={update} />}
         {section === "cadastros" && <section className="management-section">
+          <ProfilePhotoEditor />
           <button className="primary" onClick={() => setUserOpen(true)}><UserPlus /> CRIAR CADASTRO DE MORADOR OU PORTARIA</button>
           {userError && <p className="error-note" role="alert">{userError}</p>}
           <Section title="Contas cadastradas" subtitle="Moradores e equipe da Portaria" icon={<Users />} />
