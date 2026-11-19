@@ -40,7 +40,7 @@ function toRow(collection: Collection, item: Record<string, any>, userId: string
 
 export async function loadCloudAppData(apartment: string, role: string): Promise<Partial<AppState>> {
   if (!supabase) throw new Error("Supabase não configurado.");
-  const collections = Object.keys(TABLES) as Collection[];
+  const collections = (Object.keys(TABLES) as Collection[]).filter(collection => collection !== "residents");
   const results = await Promise.all(collections.map(async collection => {
     let query = supabase!.from(TABLES[collection]).select("*");
     if (role === "morador" && ["visitors", "family", "workers", "packages", "accesses", "reservations", "residents", "moves"].includes(collection)) query = query.eq("apartment", apartment);
