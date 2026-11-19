@@ -10,7 +10,7 @@ export function ResidentMoves({ s, add, nav }: ScreenProps) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("09:00");
   const [company, setCompany] = useState("");
-  const today = new Date().toLocaleDateString("en-CA");
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   const rows = s.moves.filter((m) => m.apartment === s.apartment).sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
   const submit = (event: FormEvent) => {
     event.preventDefault();

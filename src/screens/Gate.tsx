@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Building2, CalendarDays, Check, ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench, Trash2, UserPlus } from "lucide-react";
 import { newId } from "../storage";
 import { Empty, Header, ListItem, LocalModeNotice, Modal, Section, PhotoPicker } from "../components/ui";
-import { cloudConfigured } from "../cloud/client";\nimport { subscribeTable } from "../cloud/repositories";
+import { cloudConfigured } from "../cloud/client";
+import { subscribeTable } from "../cloud/repositories";
 import type { ScreenProps, Visitor, Resident, MoveRequest } from "../types";
 import { APARTMENTS } from "../constants";
 import { listResidentRegistrationRequests, reviewResidentRegistration, managePortariaUsers, type RegistrationRequest, type ManagedProfile } from "../cloud";
@@ -264,8 +265,8 @@ function MovesPanel({ s, add, update }: Pick<ScreenProps, "s" | "add" | "update"
   const [date, setDate] = useState("");
   const [time, setTime] = useState("09:00");
   const [company, setCompany] = useState("");
-  const today = new Date().toLocaleDateString("en-CA");
-  const save = (event: React.FormEvent) => {
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const save = (event: FormEvent) => {
     event.preventDefault();
     if (!apartment || !date || date < today || !time) return;
     add("moves", { id: newId(), apartment, kind, date, time, company: company.trim(), status: "Aprovada", requestedBy: "Portaria" });
