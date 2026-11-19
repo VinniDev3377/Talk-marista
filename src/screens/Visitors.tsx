@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, ShieldCheck, Users } from "lucide-react";
 import { newId } from "../storage";
+import { APARTMENTS } from "../constants";
 import { Bottom, Empty, Header, Modal, ListItem } from "../components/ui";
 import type { AddFn, ScreenProps, Visitor } from "../types";
 
@@ -11,7 +12,8 @@ import type { AddFn, ScreenProps, Visitor } from "../types";
  */
 export function Visitors({ s, add, nav }: ScreenProps) {
   const [open, setOpen] = useState(false);
-  const mine = s.visitors.filter((v) => v.apartment === s.apartment);
+  const isGate = s.role === "portaria";
+  const mine = isGate ? s.visitors : s.visitors.filter((v) => v.apartment === s.apartment);
 
   return (
     <div className="screen app">
@@ -22,8 +24,8 @@ export function Visitors({ s, add, nav }: ScreenProps) {
         {!mine.length && <Empty text="Nenhuma visita cadastrada." />}
         <button className="primary" onClick={() => setOpen(true)}><Plus /> NOVA VISITA</button>
       </main>
-      {open && <VisitorModal apartment={s.apartment} add={add} close={() => setOpen(false)} />}
-      <Bottom active="account" nav={nav} />
+      {open && <VisitorModal apartment={s.apartment} isGate={isGate} add={add} close={() => setOpen(false)} />}
+      {!isGate && <Bottom active="account" nav={nav} />}
     </div>
   );
 }
@@ -34,18 +36,21 @@ export function Visitors({ s, add, nav }: ScreenProps) {
  * @param add — função que grava o visitante no estado.
  * @param close — ação para fechar o formulário.
  */
-function VisitorModal({ apartment, add, close }: { apartment: string; add: AddFn; close: () => void }) {
+function VisitorModal({ apartment, isGate, add, close }: { apartment: string; isGate: boolean; add: AddFn; close: () => void }) {
   const [name, setName] = useState("");
+  const [targetApartment, setTargetApartment] = useState(apartment);
   const [date, setDate] = useState("");
   const [type, setType] = useState<Visitor["type"]>("Visita");
 
   const save = () => {
-    add("visitors", { id: newId(), name, apartment, date, status: "Autorizada", type });
+    if (!targetApartment) return;
+    add("visitors", { id: newId(), name, apartment: targetApartment, date, status: "Autorizada", type });
     close();
   };
 
   return (
     <Modal title="Cadastrar visita" close={close}>
+      {isGate && <label>Apartamento<select value={targetApartment} onChange={(e) => setTargetApartment(e.target.value)}><option value="">Selecione</option>{APARTMENTS.map((a) => <option key={a}>{a}</option>)}</select></label>}
       <label>Nome<input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome completo" /></label>
       <label>Tipo
         <select value={type} onChange={(e) => setType(e.target.value)}>
@@ -53,7 +58,7 @@ function VisitorModal({ apartment, add, close }: { apartment: string; add: AddFn
         </select>
       </label>
       <label>Data<input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label>
-      <button className="primary" disabled={!name || !date} onClick={save}>CADASTRAR</button>
+      <button className="primary" disabled={!name.trim() || !date || !targetApartment} onClick={save}>CADASTRAR</button>
     </Modal>
   );
 }
