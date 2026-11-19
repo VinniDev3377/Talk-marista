@@ -52,7 +52,7 @@ export interface Delivery {
 }
 
 /** Cadastro de morador mantido pela Portaria. */
-export interface Resident { id: string; name: string; apartment: string; kind: "Proprietário" | "Inquilino" | "Dependente"; phone?: string }
+export interface Resident { id: string; name: string; apartment: string; avatarUrl?: string; kind: "Proprietário" | "Inquilino" | "Dependente"; phone?: string }
 /** Solicitação de mudança criada pelo morador e analisada pela Portaria. */
 export interface MoveRequest { id: string; apartment: string; kind: "Entrada" | "Saída"; date: string; time: string; company: string; status: "Aguardando aprovação" | "Aprovada" | "Recusada" | "Concluída"; requestedBy: string; reviewedAt?: string }
 
