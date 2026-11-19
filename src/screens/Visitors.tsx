@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, ShieldCheck, Users } from "lucide-react";
+import { Plus, ShieldCheck, Users, Trash2 } from "lucide-react";
 import { newId } from "../storage";
 import { APARTMENTS } from "../constants";
 import { Bottom, Empty, Header, Modal, ListItem, ResidentTopTabs } from "../components/ui";
@@ -10,7 +10,7 @@ import type { AddFn, ScreenProps, Visitor } from "../types";
  * @param add — função para acrescentar uma autorização de visita.
  * @param nav — comandos de navegação entre telas.
  */
-export function Visitors({ s, add, nav }: ScreenProps) {
+export function Visitors({ s, add, remove, nav }: ScreenProps) {
   const [open, setOpen] = useState(false);
   const isGate = s.role === "portaria";
   const mine = isGate ? s.visitors : s.visitors.filter((v) => v.apartment === s.apartment);
@@ -21,7 +21,7 @@ export function Visitors({ s, add, nav }: ScreenProps) {
       {!isGate && <ResidentTopTabs active="visitors" nav={nav} />}
       <main className="content">
         <div className="info"><ShieldCheck /><span>Cadastre visitantes e agilize o acesso à portaria.</span></div>
-        {mine.map((v) => <ListItem key={v.id} icon={<Users />} title={v.name} sub={`${v.type} · ${v.date}`} status={v.status} />)}
+        {mine.map((v) => <ListItem key={v.id} icon={<Users />} title={v.name} sub={`Apto ${v.apartment} · ${v.type} · ${v.date}`} status={v.status} action={isGate ? <button className="mini warn" onClick={() => { if (window.confirm(`Excluir a visita de ${v.name}?`)) remove("visitors", v.id); }}><Trash2 /> Excluir</button> : undefined} />)}
         {!mine.length && <Empty text="Nenhuma visita cadastrada." />}
         <button className="primary" onClick={() => setOpen(true)}><Plus /> NOVA VISITA</button>
       </main>
