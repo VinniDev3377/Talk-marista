@@ -62,9 +62,27 @@ export function Info({ kind, nav }: { kind: InfoKind; nav: Nav }) {
   useEffect(() => {
     if (kind !== "services" || !cloudConfigured || !auth.profile) return;
     let active = true;
+    
     listServiceRequests(auth.profile.role === "portaria" ? undefined : auth.profile.apartment ?? "")
-      .then(({ data, error }) => { if (error) throw error; if (active) { setServiceRows(data ?? []); setServiceError(""); } })
-     , (error: unknown) => { if (active) setServiceError(error instanceof Error ? error.message : "Não foi possível carregar os pedidos."); });
+      .then(
+        ({ data, error }) => {
+          if (error) throw error;
+          if (active) {
+            setServiceRows(data ?? []);
+            setServiceError("");
+          }
+        },
+        (error: unknown) => {
+          if (active) {
+            setServiceError(
+              error instanceof Error
+                ? error.message
+                : "Não foi possível carregar os pedidos."
+            );
+          }
+        }
+      );
+
     return () => { active = false; };
   }, [kind, auth.profile]);
 
