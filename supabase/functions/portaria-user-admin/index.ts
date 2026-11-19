@@ -120,6 +120,10 @@ Deno.serve(async (req) => {
       if (!userId || userId === callerData.user.id) return json({ error: "Não é permitido excluir a própria conta da Portaria." }, 400);
       const { data: target, error: targetError } = await admin.from("profiles").select("id,role").eq("id", userId).maybeSingle();
       if (targetError || !target || !["morador", "portaria"].includes(target.role)) return json({ error: "Cadastro não encontrado." }, 404);
+      const { data: avatarFiles } = await admin.storage.from("profile-photos").list(userId);
+      if (avatarFiles?.length) {
+        await admin.storage.from("profile-photos").remove(avatarFiles.map(file => `${userId}/${file.name}`));
+      }
       const { error } = await admin.auth.admin.deleteUser(userId);
       if (error) throw error;
       return json({ success: true });
