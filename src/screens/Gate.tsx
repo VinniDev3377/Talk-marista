@@ -107,10 +107,11 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
         ))}
         {!visitors.length && <Empty text="Nenhum visitante localizado." />}
 
-        <Section title="Últimos acessos" subtitle="Histórico" icon={<Clock3 />} />
-        {s.accesses.slice(-8).reverse().map((a) => (
-          <ListItem key={a.id} icon={<DoorOpen />} title={a.person} sub={`Apto ${a.apartment} · ${a.time}`} status={a.status} />
-        ))}
+        <Section title="Atividade recente" subtitle="Acessos e encomendas" icon={<Clock3 />} />
+        {[
+          ...s.accesses.map((a) => ({ id: `access-${a.id}`, at: a.time, title: a.person, sub: `Apto ${a.apartment} · Acesso`, status: a.status, kind: "access" as const })),
+          ...s.packages.map((p) => ({ id: `package-${p.id}`, at: p.withdrawnAt || p.receivedAt, title: p.recipient, sub: `Apto ${p.apartment} · ${p.status === "Retirada" ? "Encomenda retirada" : "Encomenda recebida"}`, status: p.status, kind: "package" as const })),
+        ].slice(-12).reverse().map((item) => <ListItem key={item.id} icon={item.kind === "access" ? <DoorOpen /> : <Package />} title={item.title} sub={`${item.sub} · ${item.at}`} status={item.status} />)}
 
         </>}
         {section === "moradores" && <ResidentsPanel {...{s, add, update, remove}} onAdd={() => setResidentOpen(true)} />}
