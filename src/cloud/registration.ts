@@ -4,7 +4,7 @@ export interface RegistrationRequest { id: string; full_name: string; apartment:
 /** Cria a conta sem liberar perfil ativo; a Edge Function mantém a senha fora das tabelas públicas. */
 export async function submitResidentRegistration(input: { fullName: string; apartment: string; password: string }) {
   if (!supabase) throw new Error("Conexão com o Supabase não configurada.");
-  const { data, error } = await supabase.functions.invoke("resident-register", { body: input });
+  const { data, error } = await supabase.functions.invoke("resident-register-", { body: input });
   if (error) throw new Error(error.message || "Não foi possível enviar o cadastro.");
   if (data?.error) throw new Error(data.error);
   return data;
