@@ -243,7 +243,7 @@ export function PhotoPicker({ value, onChange, label = "Foto da encomenda" }: { 
           <button type="button" className="photo-btn ghost" onClick={() => inputRef.current?.click()}><Camera /> Escolher foto</button>
           {value && <button type="button" className="photo-btn ghost" onClick={() => onChange(undefined)}><Trash2 /> Remover</button>}
         </div>
-        <input ref={inputRef} type="file" accept="image/*" capture="environment" hidden onChange={handleFile} />
+        <input ref={inputRef} type="file" accept="image/*" hidden onChange={handleFile} />
       </div>
       {cameraOpen && <div className="camera-panel">
         <video ref={videoRef} autoPlay playsInline muted aria-label="Prévia da webcam" />
