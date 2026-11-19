@@ -111,7 +111,8 @@ Deno.serve(async (req) => {
         }
         await admin.from("profiles").update({ avatar_path: avatarPath }).eq("id", created.user.id);
       }
-      const { data: avatarSigned } = avatarPath ? await admin.storage.from("profile-photos").createSignedUrl(avatarPath, 3600) : { data: null };\n      return json({ success: true, id: created.user.id, fullName, apartment, role, email, avatarPath, avatar_url: avatarSigned?.signedUrl ?? null });
+      const { data: avatarSigned } = avatarPath ? await admin.storage.from("profile-photos").createSignedUrl(avatarPath, 3600) : { data: null };
+      return json({ success: true, id: created.user.id, fullName, apartment, role, email, avatarPath, avatar_url: avatarSigned?.signedUrl ?? null });
     }
 
     if (action === "delete") {
