@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Building2, CalendarDays, Check, ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench } from "lucide-react";
+import { Building2, CalendarDays, Check, ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench, Trash2, UserPlus } from "lucide-react";
 import { newId } from "../storage";
-import { Empty, Header, ListItem, LocalModeNotice, Modal, Section } from "../components/ui";
+import { Empty, Header, ListItem, LocalModeNotice, Modal, Section, PhotoPicker } from "../components/ui";
 import { cloudConfigured } from "../cloud/client";
 import type { ScreenProps, Visitor, Resident, MoveRequest } from "../types";
 import { APARTMENTS } from "../constants";
-import { listResidentRegistrationRequests, reviewResidentRegistration, type RegistrationRequest } from "../cloud";
+import { listResidentRegistrationRequests, reviewResidentRegistration, managePortariaUsers, type RegistrationRequest, type ManagedProfile } from "../cloud";
 
 /**
  * Painel da portaria: controle de acesso, visitantes e atalho para encomendas.
@@ -23,7 +23,7 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
   const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>([]);
   const [registrationError, setRegistrationError] = useState("");
   const [reviewBusy, setReviewBusy] = useState("");
-  const [residentOpen, setResidentOpen] = useState(false);
+  const [residentOpen, setResidentOpen] = useState(false);\n  const [userOpen, setUserOpen] = useState(false);\n  const [managedUsers, setManagedUsers] = useState<ManagedProfile[]>([]);\n  const [userError, setUserError] = useState("");
   const q = query.trim().toLowerCase();
 
   // Busca a fila somente quando a Portaria abre a aba de cadastros pendentes.
@@ -127,7 +127,7 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
           </div>)}
           {!registrationRequests.length && !registrationError && cloudConfigured && <Empty text="Nenhum cadastro aguardando aprovação." />}
         </section>}
-        {residentOpen && <ResidentModal add={add} close={() => setResidentOpen(false)} />}
+        {residentOpen && <ResidentModal add={add} close={() => setResidentOpen(false)} />}\n        {userOpen && <PortariaUserModal onClose={() => setUserOpen(false)} onCreated={user => setManagedUsers(rows => [...rows, user].sort((a,b) => a.full_name.localeCompare(b.full_name)))} onError={setUserError} />}
         <button className="danger" onClick={onLogout}>Sair da portaria</button>
       </main>
     </div>
@@ -160,7 +160,7 @@ function ResidentsPanel({ s, add, update, remove, onAdd }: Pick<ScreenProps, "s"
       <div className="apartment-people-list">
         <Section title="Moradores" subtitle="Pessoas vinculadas" icon={<Users />} />
         {residents.map((person) => cloudConfigured
-          ? <ListItem key={`resident-${person.id}`} icon={<Users />} title={person.name} sub={`Morador · Apto ${person.apartment}`} />
+          ? <ListItem key={`resident-${person.id}`} icon={<Users />} thumb={person.avatarUrl} title={person.name} sub={`Morador · Apto ${person.apartment}`} />
           : <ResidentRow key={`resident-${person.id}`} resident={person} update={update} remove={remove} />)}
         <Section title="Familiares" subtitle="Vínculos familiares" icon={<Users />} />
         {family.map((person) => <ListItem key={`family-${person.id}`} icon={<Users />} title={person.name} sub={person.relation} />)}
@@ -198,7 +198,7 @@ function ResidentModal({ add, close }: { add: ScreenProps["add"]; close: () => v
   </form></div>;
 }
 
-function MovesPanel({ s, update }: Pick<ScreenProps, "s" | "update">) {
+function PortariaUserModal({ onClose, onCreated, onError }: { onClose: () => void; onCreated: (user: ManagedProfile) => void; onError: (message: string) => void }) {\n  const [fullName, setFullName] = useState("");\n  const [role, setRole] = useState<"morador" | "portaria">("morador");\n  const [apartment, setApartment] = useState("");\n  const [email, setEmail] = useState("");\n  const [password, setPassword] = useState("");\n  const [photo, setPhoto] = useState<string>();\n  const [busy, setBusy] = useState(false);\n  const save = async () => {\n    setBusy(true); onError("");\n    try {\n      const result = await managePortariaUsers({ action: "create", fullName, role, apartment, email, password, photo });\n      onCreated({ id: result.id, full_name: result.fullName, apartment: result.apartment, role: result.role, avatar_url: result.avatarPath ? undefined : null, created_at: new Date().toISOString() });\n      onClose();\n    } catch (error) { onError(error instanceof Error ? error.message : "Não foi possível criar a conta."); }\n    finally { setBusy(false); }\n  };\n  return <Modal title="Criar conta de acesso" close={onClose}>\n    <PhotoPicker label="Foto do perfil" value={photo} onChange={setPhoto} />\n    <label>Nome completo<input value={fullName} onChange={e => setFullName(e.target.value)} autoComplete="name" /></label>\n    <label>Tipo de conta<select value={role} onChange={e => setRole(e.target.value as "morador" | "portaria")}><option value="morador">Morador</option><option value="portaria">Portaria</option></select></label>\n    {role === "morador" ? <label>Apartamento<select value={apartment} onChange={e => setApartment(e.target.value)}><option value="">Selecione</option>{APARTMENTS.map(a => <option key={a}>{a}</option>)}</select></label> : <label>E-mail de acesso<input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="off" /></label>}\n    <label>Senha inicial<input type="password" value={password} onChange={e => setPassword(e.target.value)} minLength={8} autoComplete="new-password" /></label>\n    <p className="muted">A senha deve ter pelo menos 8 caracteres. O morador usará nome completo e apartamento para entrar; a Portaria usará e-mail e senha.</p>\n    <div className="modal-actions"><button type="button" onClick={onClose}>Cancelar</button><button className="primary" disabled={busy || fullName.trim().split(/\\s+/).length < 2 || password.length < 8 || (role === "morador" ? !apartment : !email.includes("@"))} onClick={save}>{busy ? "CRIANDO..." : "CRIAR CONTA"}</button></div>\n  </Modal>;\n}\n\nfunction MovesPanel({ s, update }: Pick<ScreenProps, "s" | "update">) {
   return <section className="management-section">
     {[...s.moves].sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)).map((m) => <div className="management-row" key={m.id}><div><b>Apto {m.apartment} · Mudança de {m.kind.toLowerCase()}</b><small>{m.date} às {m.time} · {m.company || "Sem empresa informada"} · Solicitante: {m.requestedBy}</small></div><em>{m.status}</em>
       {m.status === "Aguardando aprovação" && <><button className="mini" onClick={() => update("moves", m.id, { status: "Aprovada", reviewedAt: new Date().toLocaleString("pt-BR") })}>Aprovar</button><button className="mini warn" onClick={() => update("moves", m.id, { status: "Recusada", reviewedAt: new Date().toLocaleString("pt-BR") })}>Recusar</button></>}
