@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Building2, CalendarDays, Check, ChevronRight, Clock3, DoorOpen, Package, Search, ShieldCheck, Users, Wrench, Trash2, UserPlus } from "lucide-react";
 import { newId } from "../storage";
 import { Empty, Header, ListItem, LocalModeNotice, Modal, Section, PhotoPicker } from "../components/ui";
-import { cloudConfigured } from "../cloud/client";
+import { cloudConfigured } from "../cloud/client";\nimport { subscribeTable } from "../cloud/repositories";
 import type { ScreenProps, Visitor, Resident, MoveRequest } from "../types";
 import { APARTMENTS } from "../constants";
 import { listResidentRegistrationRequests, reviewResidentRegistration, managePortariaUsers, type RegistrationRequest, type ManagedProfile } from "../cloud";
@@ -30,15 +30,22 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
   const [userError, setUserError] = useState("");
   const q = query.trim().toLowerCase();
 
-  // Busca a fila somente quando a Portaria abre a aba de cadastros pendentes.
+  // Busca a fila e recebe novas solicitações do Supabase em tempo real.
   useEffect(() => {
     if (!cloudConfigured) return;
     let active = true;
-    void listResidentRegistrationRequests().then(rows => { if (active) { setRegistrationRequests(rows); setRegistrationError(""); } })
-      .catch(err => { if (active) setRegistrationError(err instanceof Error ? err.message : "Falha ao carregar pedidos."); });
+    const loadRequests = () => {
+      void listResidentRegistrationRequests()
+        .then(rows => { if (active) { setRegistrationRequests(rows); setRegistrationError(""); } })
+        .catch(err => { if (active) setRegistrationError(err instanceof Error ? err.message : "Falha ao carregar pedidos."); });
+    };
+    loadRequests();
     void managePortariaUsers({ action: "list" }).then(result => { if (active) setManagedUsers(result.users ?? []); })
       .catch(err => { if (active) setUserError(err instanceof Error ? err.message : "Falha ao carregar contas."); });
-    return () => { active = false; };
+    const stop = subscribeTable("resident_registration_requests", loadRequests);
+    const onFocus = () => loadRequests();
+    window.addEventListener("focus", onFocus);
+    return () => { active = false; stop(); window.removeEventListener("focus", onFocus); };
   }, []);
 
   const reviewRegistration = async (id: string, decision: "approve" | "reject") => {
@@ -133,7 +140,7 @@ export function Gate({ s, add, update, remove, nav, onLogout }: ScreenProps & { 
 
         </>}
         {section === "moradores" && <ResidentsPanel {...{s, add, update, remove}} onAdd={() => setResidentOpen(true)} />}
-        {section === "mudancas" && <MovesPanel s={s} update={update} />}
+        {section === "mudancas" && <MovesPanel s={s} add={add} update={update} />}
         {section === "cadastros" && <section className="management-section">
           <ProfilePhotoEditor />
           <button className="primary" onClick={() => setUserOpen(true)}><UserPlus /> CRIAR CADASTRO DE MORADOR OU PORTARIA</button>
@@ -250,11 +257,35 @@ function PortariaUserModal({ onClose, onCreated, onError }: { onClose: () => voi
   </Modal>;
 }
 
-function MovesPanel({ s, update }: Pick<ScreenProps, "s" | "update">) {
+function MovesPanel({ s, add, update }: Pick<ScreenProps, "s" | "add" | "update">) {
+  const [open, setOpen] = useState(false);
+  const [apartment, setApartment] = useState("");
+  const [kind, setKind] = useState<MoveRequest["kind"]>("Entrada");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("09:00");
+  const [company, setCompany] = useState("");
+  const today = new Date().toLocaleDateString("en-CA");
+  const save = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!apartment || !date || date < today || !time) return;
+    add("moves", { id: newId(), apartment, kind, date, time, company: company.trim(), status: "Aprovada", requestedBy: "Portaria" });
+    setOpen(false); setApartment(""); setDate(""); setCompany("");
+  };
   return <section className="management-section">
-    {[...s.moves].sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)).map((m) => <div className="management-row" key={m.id}><div><b>Apto {m.apartment} · Mudança de {m.kind.toLowerCase()}</b><small>{m.date} às {m.time} · {m.company || "Sem empresa informada"} · Solicitante: {m.requestedBy}</small></div><em>{m.status}</em>
-      {m.status === "Aguardando aprovação" && <><button className="mini" onClick={() => update("moves", m.id, { status: "Aprovada", reviewedAt: new Date().toLocaleString("pt-BR") })}>Aprovar</button><button className="mini warn" onClick={() => update("moves", m.id, { status: "Recusada", reviewedAt: new Date().toLocaleString("pt-BR") })}>Recusar</button></>}
+    <button className="primary" onClick={() => setOpen(true)}>＋ Reservar data de mudança</button>
+    <p className="muted">Cadastre uma data para mudança de entrada ou saída. O registro será salvo no banco do condomínio.</p>
+    {[...s.moves].sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)).map(m => <div className="management-row" key={m.id}><div><b>Apto {m.apartment} · Mudança de {m.kind.toLowerCase()}</b><small>{m.date} às {m.time} · {m.company || "Sem empresa informada"} · Solicitante: {m.requestedBy}</small></div><em>{m.status}</em>
+      {m.status === "Aguardando aprovação" && <><button className="mini" onClick={() => update("moves", m.id, { status: "Aprovada" })}>Aprovar</button><button className="mini warn" onClick={() => update("moves", m.id, { status: "Recusada" })}>Recusar</button></>}
       {m.status === "Aprovada" && <button className="mini" onClick={() => update("moves", m.id, { status: "Concluída" })}>Concluir</button>}
-    </div>)}{!s.moves.length && <Empty text="Nenhuma solicitação de mudança." />}</section>;
+    </div>)}{!s.moves.length && <Empty text="Nenhuma solicitação de mudança cadastrada." />}
+    {open && <div className="modal-backdrop"><form className="modal" onSubmit={save}><h2>Reservar data de mudança</h2>
+      <label>Apartamento<select required value={apartment} onChange={e => setApartment(e.target.value)}><option value="">Selecione</option>{APARTMENTS.map(a => <option key={a}>{a}</option>)}</select></label>
+      <label>Tipo<select value={kind} onChange={e => setKind(e.target.value as MoveRequest["kind"])}><option>Entrada</option><option>Saída</option></select></label>
+      <label>Data<input type="date" min={today} required value={date} onChange={e => setDate(e.target.value)} /></label>
+      <label>Horário<input type="time" required value={time} onChange={e => setTime(e.target.value)} /></label>
+      <label>Empresa / responsável<input value={company} onChange={e => setCompany(e.target.value)} /></label>
+      <div className="modal-actions"><button type="button" onClick={() => setOpen(false)}>Cancelar</button><button className="primary" type="submit">Salvar data</button></div>
+    </form></div>}
+  </section>;
 }
 
