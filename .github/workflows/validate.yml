@@ -30,7 +30,7 @@ jobs:
       - name: Validar função de administração do Supabase
         run: deno check supabase/functions/portaria-user-admin/index.ts
       - name: Preparar pacote ZIP do código atualizado
-        run: zip -r talk-marista-codigo-atualizado.zip . -x ".git/*" "node_modules/*" "dist/*" ".vercel/*" "talk-marista-codigo-atualizado.zip"
+        run: zip -r talk-marista-codigo-atualizado.zip . -x ".git/*" "node_modules/*" "dist/*" ".vercel/*" "talk-marista-codigo-atualizado.zip" ".env" ".env.local" ".env.production"
       - name: Disponibilizar ZIP para download
         uses: actions/upload-artifact@v4
         with:
