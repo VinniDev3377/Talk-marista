@@ -1,12 +1,17 @@
 # Guia rápido — Talk Marista 6.3.1
 
-Este projeto usa React, TypeScript, Vite e Supabase. A versão de produção é publicada pelo Vercel a partir da branch main do GitHub.
+O código está dividido em duas áreas principais:
 
-Para abrir o projeto no VS Code, extrair o ZIP e executar os passos de instalação, build, configuração do Supabase e publicação, consulte o arquivo README.md na raiz.
+- `frontend/`: interface React + TypeScript.
+- `backend/`: funções Supabase, migrations e scripts SQL.
 
-Comandos principais:
-- npm install
-- npm run dev
-- npm run build
+Abra a pasta principal do repositório no VS Code. Para executar localmente, é necessário Node.js 20 LTS ou compatível.
 
-Não coloque chaves secretas, senhas ou tokens privados no código do navegador ou no GitHub.
+```bash
+npm install
+npm run dev
+```
+
+Para testar em outro dispositivo na mesma rede, use `npm run dev:ios`. Para verificar a compilação de produção, use `npm run build`.
+
+Consulte o [README.md](README.md) para a arquitetura completa, configuração e publicação. Nunca coloque senhas, service role keys ou tokens privados no código do navegador ou no GitHub.
