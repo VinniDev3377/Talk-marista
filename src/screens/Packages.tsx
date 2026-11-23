@@ -19,7 +19,8 @@ export function Packages({ s, add, update, remove, nav }: ScreenProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"pendentes" | "retiradas">("pendentes");
-  const [selected, setSelected] = useState<Delivery | null>(null);\n  const [withdrawItem, setWithdrawItem] = useState<Delivery | null>(null);
+  const [selected, setSelected] = useState<Delivery | null>(null);
+  const [withdrawItem, setWithdrawItem] = useState<Delivery | null>(null);
 
   const canRegister = s.role === "portaria";
   const isResident = s.role === "morador";
