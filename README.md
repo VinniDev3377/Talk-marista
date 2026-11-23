@@ -1,59 +1,69 @@
-# Talk Marista 6.3.1
+# Talk Marista
 
-Aplicativo web do condomínio Talk Marista, desenvolvido com React, TypeScript e Vite, integrado ao Supabase para autenticação, dados e atualizações em tempo real.
+Aplicativo de gestão condominial para moradores e equipe de Portaria. O projeto utiliza React, TypeScript e Vite no front-end, com Supabase no back-end para autenticação, dados, arquivos e atualizações em tempo real.
 
-## Requisitos
-- Node.js LTS (20 ou versão compatível com o projeto)
-- Visual Studio Code
-- Git (opcional, para versionar alterações localmente)
+**Versão:** 6.3.1  
+**Aplicação:** https://talk-marista-app.vercel.app/  
+**Repositório:** https://github.com/VinniDev3377/Talk-marista
 
-## Abrir e executar no VS Code
-1. Extraia o ZIP em uma pasta do computador.
-2. No VS Code, use Arquivo → Abrir Pasta e selecione a pasta extraída.
-3. Abra Terminal → Novo Terminal.
-4. Instale as dependências executando: **npm install**.
-5. Inicie o aplicativo executando: **npm run dev**.
-6. Abra no navegador o endereço local exibido pelo Vite (normalmente http://localhost:5173).
+## Organização do projeto
 
-Para testar em outro aparelho na mesma rede, execute **npm run dev:ios**. O terminal mostrará o endereço de rede para abrir no celular.
+```text
+Talk-marista/
+├── frontend/                 # Aplicação web (React + TypeScript)
+│   ├── public/               # PWA, ícones e configuração pública
+│   └── src/
+│       ├── assets/           # Imagens e recursos visuais
+│       ├── cloud/            # Cliente e integração com Supabase
+│       ├── components/       # Componentes compartilhados
+│       ├── screens/          # Telas e módulos do aplicativo
+│       └── utils/            # Funções auxiliares
+├── backend/                  # Serviços e banco de dados
+│   ├── supabase/
+│   │   ├── functions/        # Edge Functions
+│   │   └── migrations/       # Migrações SQL versionadas
+│   └── sql/                  # Scripts de referência e diagnóstico
+├── docs/                     # Documentação técnica
+├── .github/workflows/        # Validação e publicação automatizadas
+├── package.json              # Dependências e comandos do projeto
+├── tsconfig.json             # Configuração TypeScript
+└── vite.config.ts            # Configuração de desenvolvimento e build
+```
 
-## Verificar antes de publicar
-Execute **npm run build**. O comando verifica os tipos TypeScript e gera a versão de produção na pasta dist/.
+## Tecnologias
 
-## Estrutura principal
-- src/App.tsx — navegação, sessão e integração dos módulos.
-- src/main.tsx — inicialização do React.
-- src/types.ts — tipos compartilhados do aplicativo.
-- src/constants.ts — apartamentos e opções fixas.
-- src/storage.ts — estado local e dados de demonstração.
-- src/cloud/ — cliente, autenticação e operações Supabase.
-- src/components/ui.tsx — componentes visuais reutilizados.
-- src/screens/ — telas separadas por funcionalidade.
-- src/utils/ — funções auxiliares.
-- src/assets/ — imagens e recursos visuais.
-- supabase/functions/ — Edge Functions usadas pelo aplicativo.
-- supabase/migrations/ — histórico de alterações no banco.
-- public/supabase-config.js — configuração pública do cliente Supabase.
-- public/icons/ — ícones do aplicativo.
+- **Front-end:** React 18, TypeScript, Vite, CSS e Lucide React.
+- **Back-end:** Supabase (PostgreSQL, Auth, Storage, Realtime e Edge Functions em Deno).
+- **Entrega:** GitHub Actions e Vercel.
 
-## Supabase e segurança
-O projeto está conectado ao Supabase de produção. O arquivo public/supabase-config.js contém somente a URL e a chave pública (publishable/anon) do cliente.
+## Executar no Visual Studio Code
 
-- Nunca coloque service_role, secret keys, senhas ou tokens privados em arquivos public/, no código do navegador ou no GitHub.
-- Operações administrativas devem continuar protegidas pelas Edge Functions e pelas políticas RLS do banco.
-- Alterações de estrutura do banco devem ser registradas em uma migration SQL em supabase/migrations/ e aplicadas ao projeto Supabase correto.
-- Para alterações apenas de interface e comportamento que usam tabelas existentes, não crie migrations sem necessidade.
+Requisitos: Node.js 20 LTS ou compatível e Visual Studio Code.
+
+1. Baixe ou clone o repositório.
+2. Abra a pasta principal `Talk-marista` no VS Code.
+3. No terminal integrado, execute `npm install`.
+4. Execute `npm run dev` e abra o endereço local indicado.
+5. Para testar em outro dispositivo da mesma rede, execute `npm run dev:ios`.
+
+Para validar a versão de produção, execute `npm run build`. O resultado será gerado em `dist/`.
+
+## Configuração e segurança
+
+O arquivo `frontend/public/supabase-config.js` contém apenas a URL do projeto e a chave pública publishable/anon, própria para uso no navegador. Nunca adicione service role keys, senhas, tokens privados ou credenciais administrativas ao front-end ou ao Git.
+
+As operações administrativas devem permanecer protegidas pelas Edge Functions e pelas políticas RLS do Supabase. Alterações no banco devem ser registradas em `backend/supabase/migrations/`.
 
 ## Publicação
-O repositório GitHub VinniDev3377/Talk-marista está conectado ao Vercel. A branch main é a versão de produção. Após enviar uma alteração validada para main, o Vercel inicia a publicação automaticamente.
 
-Aplicativo: https://talk-marista-app.vercel.app/
-Repositório: https://github.com/VinniDev3377/Talk-marista
+A branch `main` é a versão de produção e está conectada ao Vercel. O build é executado a partir da raiz do repositório; o Vite utiliza `frontend/` como diretório da aplicação e gera os arquivos em `dist/`.
 
-## Padrão de manutenção
-- Preserve o estilo visual atual: cores, tipografia, espaçamentos e componentes.
-- Prefira mudanças pequenas e localizadas.
-- Mantenha os tipos em TypeScript atualizados.
-- Reutilize os componentes de src/components/ui.tsx.
-- Explique funções e trechos não óbvios com comentários curtos; evite comentários que apenas repetem o nome do código.
-- Antes de enviar alterações, execute npm run build.
+As alterações em `backend/supabase/` também podem acionar o fluxo de publicação do Supabase, desde que os secrets necessários estejam configurados no GitHub.
+
+## Padrões de contribuição
+
+- Mantenha a separação entre interface (`frontend/`) e serviços/dados (`backend/`).
+- Prefira componentes e funções reutilizáveis.
+- Comente decisões e trechos não óbvios; evite comentários redundantes.
+- Preserve a experiência visual existente, salvo solicitação explícita.
+- Execute `npm run build` antes de integrar alterações.

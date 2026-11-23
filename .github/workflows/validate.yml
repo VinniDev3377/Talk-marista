@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feat/admin-perfis-fotos-desktop-ui
   pull_request:
     branches:
       - main
@@ -19,20 +18,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
       - name: Instalar dependências
         run: npm install
       - name: Verificar tipos e compilar
         run: npm run build
-      - name: Configurar Deno para validar a Edge Function
+      - name: Configurar Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Validar função de administração do Supabase
-        run: deno check supabase/functions/portaria-user-admin/index.ts
-      - name: Validar função de cadastro de morador
-        run: deno check supabase/functions/resident-register-/index.ts
+      - name: Validar Edge Functions
+        run: |
+          deno check backend/supabase/functions/portaria-user-admin/index.ts
+          deno check backend/supabase/functions/resident-register-/index.ts
       - name: Preparar pacote ZIP do código atualizado
-        run: zip -r talk-marista-codigo-atualizado.zip . -x ".git/*" "node_modules/*" "dist/*" ".vercel/*" "talk-marista-codigo-atualizado.zip" ".env" ".env.local" ".env.production"
+        run: zip -r talk-marista-codigo-atualizado.zip . -x ".git/*" "node_modules/*" "dist/*" ".vercel/*" "talk-marista-codigo-atualizado.zip" ".env" ".env.*"
       - name: Disponibilizar ZIP para download
         uses: actions/upload-artifact@v4
         with:
