@@ -20,6 +20,7 @@ export function Packages({ s, add, update, remove, nav }: ScreenProps) {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"pendentes" | "retiradas">("pendentes");
   const [selected, setSelected] = useState<Delivery | null>(null);
+  const [withdrawItem, setWithdrawItem] = useState<Delivery | null>(null);
 
   const canRegister = s.role === "portaria";
   const isResident = s.role === "morador";
@@ -64,7 +65,7 @@ export function Packages({ s, add, update, remove, nav }: ScreenProps) {
             title={`Apto ${p.apartment} · ${p.recipient}`}
             sub={`${p.kind} ${p.size.toLowerCase()} · ${p.receivedAt}${p.withdrawnBy ? ` · Retirada por ${p.withdrawnBy}` : ""}${p.withdrawnAt ? ` · ${p.withdrawnAt}` : ""}`}
             status={p.status}
-            action={canRegister ? <div className="reservation-review">{p.status === "Recebida" && <button className="mini" onClick={() => setSelected(p)}>Registrar retirada</button>}<button className="mini warn" onClick={() => { if (window.confirm(`Excluir a encomenda de ${p.recipient}?`)) remove("packages", p.id); }}><Trash2 /> Excluir</button></div> : undefined}
+            action={canRegister ? <button className="mini" onClick={() => setSelected(p)}>Opções</button> : undefined}
           />
         ))}
         {!rows.length && <Empty text="Nenhuma encomenda encontrada." />}
@@ -72,7 +73,7 @@ export function Packages({ s, add, update, remove, nav }: ScreenProps) {
         {canRegister && <button className="primary" onClick={() => setOpen(true)}><Plus /> REGISTRAR ENCOMENDA</button>}
       </main>
       {open && <PackageModal add={add} close={() => setOpen(false)} />}
-      {selected && <WithdrawModal item={selected} update={update} close={() => setSelected(null)} />}
+      {selected && <Modal title="Gerenciar encomenda" close={() => setSelected(null)}><p><b>{selected.recipient}</b> · Apartamento {selected.apartment}</p><p>{selected.kind} {selected.size.toLowerCase()} · {selected.status}</p>{selected.status === "Recebida" && <button className="primary" onClick={() => { setWithdrawItem(selected); setSelected(null); }}>Registrar como retirada</button>}<button className="mini warn" onClick={() => { if (window.confirm("Excluir esta encomenda?")) { remove("packages", selected.id); setSelected(null); } }}><Trash2 /> Excluir encomenda</button></Modal>}{withdrawItem && <WithdrawModal item={withdrawItem} update={update} close={() => setWithdrawItem(null)} />}
       {isResident && <Bottom active="account" nav={nav} />}
     </div>
   );
