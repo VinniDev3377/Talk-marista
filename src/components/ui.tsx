@@ -257,7 +257,7 @@ export function PhotoPicker({ value, onChange, label = "Foto da encomenda" }: { 
 
 /** Navegação superior compartilhada das principais áreas do morador. */
 const RESIDENT_TABS: { screen: Screen; label: string }[] = [
-  { screen: "home", label: "Resumo" },
+  { screen: "home", label: "Home" },
   { screen: "reservations", label: "Reservas" },
   { screen: "visitors", label: "Visitantes" },
   { screen: "workers", label: "Prestadores" },

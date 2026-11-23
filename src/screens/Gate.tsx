@@ -209,15 +209,19 @@ function ResidentsPanel({ s, add, update, remove, onAdd }: Pick<ScreenProps, "s"
 
 function ResidentRow({ resident, update, remove }: { resident: Resident; update: ScreenProps["update"]; remove: ScreenProps["remove"] }) {
   const [editing, setEditing] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [name, setName] = useState(resident.name);
   const [phone, setPhone] = useState(resident.phone ?? "");
-  return <div className="management-row"><div><b>{resident.name}</b><small>Apto {resident.apartment} · {resident.kind} · {resident.phone || "Sem telefone"}</small></div>
-    <button className="mini" onClick={() => setEditing((v) => !v)}>{editing ? "Fechar" : "Editar"}</button>
-    <button className="mini warn" onClick={() => { if (window.confirm(`Excluir ${resident.name}?`)) remove("residents", resident.id); }}>Excluir</button>
+  const deleteResident = () => {
+    if (window.confirm("Excluir este morador?")) { remove("residents", resident.id); setActionsOpen(false); }
+  };
+  return <div className="management-row">
+    <div><b>{resident.name}</b><small>Apto {resident.apartment} · {resident.kind} · {resident.phone || "Sem telefone"}</small></div>
+    <button className="mini" onClick={() => setActionsOpen(true)}>Opções</button>
     {editing && <div className="inline-edit"><label>Nome<input value={name} onChange={(e) => setName(e.target.value)} /></label><label>Telefone<input value={phone} onChange={(e) => setPhone(e.target.value)} /></label><button className="primary" disabled={!name.trim()} onClick={() => { update("residents", resident.id, { name: name.trim(), phone: phone.trim() }); setEditing(false); }}>Salvar alterações</button></div>}
+    {actionsOpen && <Modal title="Opções do morador" close={() => setActionsOpen(false)}><p>{resident.name} · Apartamento {resident.apartment}</p><button className="primary" onClick={() => { setActionsOpen(false); setEditing(true); }}>Editar cadastro</button><button className="mini warn" onClick={deleteResident}>Excluir morador</button></Modal>}
   </div>;
 }
-
 function ResidentModal({ add, close }: { add: ScreenProps["add"]; close: () => void }) {
   const [name, setName] = useState(""); const [apartment, setApartment] = useState("");
   const [kind, setKind] = useState<Resident["kind"]>("Proprietário"); const [phone, setPhone] = useState("");
