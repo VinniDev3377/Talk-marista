@@ -245,7 +245,9 @@ function PortariaUserModal({ onClose, onCreated, onError }: { onClose: () => voi
   const save = async () => {
     setBusy(true); onError("");
     try {
-      const result = await managePortariaUsers({ action: "create", fullName, role, apartment, email, password, photo });
+      const input: Record<string, unknown> = { action: "create", fullName, role, apartment, email, password };
+      if (photo) input.photo = photo;
+      const result = await managePortariaUsers(input);
       onCreated({ id: result.id, full_name: result.fullName, apartment: result.apartment, role: result.role, avatar_url: result.avatar_url ?? null, created_at: new Date().toISOString() });
       onClose();
     } catch (error) { onError(error instanceof Error ? error.message : "Não foi possível criar a conta."); }

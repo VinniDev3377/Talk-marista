@@ -88,15 +88,17 @@ Deno.serve(async (req) => {
       });
       if (createError || !created.user) throw createError ?? new Error("Não foi possível criar a conta.");
       const { error: insertError } = await admin.from("profiles").insert({
-        id: created.user.id, full_name: fullName, apartment, role,
+        id: created.user.id, full_name: fullName, apartment, role, avatar_path: null,
       });
       if (insertError) {
         await admin.auth.admin.deleteUser(created.user.id);
         throw insertError;
       }
+      // Foto de perfil é opcional: sem imagem, a conta é criada normalmente.
       let avatarPath: string | null = null;
-      if (typeof body.photo === "string" && body.photo.startsWith("data:image/")) {
-        const match = body.photo.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
+      const photo = typeof body.photo === "string" ? body.photo.trim() : "";
+      if (photo) {
+        const match = photo.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
         if (!match) {
           await admin.auth.admin.deleteUser(created.user.id);
           return json({ error: "Formato de foto inválido." }, 400);
@@ -109,7 +111,12 @@ Deno.serve(async (req) => {
           await admin.auth.admin.deleteUser(created.user.id);
           throw uploadError;
         }
-        await admin.from("profiles").update({ avatar_path: avatarPath }).eq("id", created.user.id);
+        const { error: avatarUpdateError } = await admin.from("profiles")
+          .update({ avatar_path: avatarPath }).eq("id", created.user.id);
+        if (avatarUpdateError) {
+          await admin.auth.admin.deleteUser(created.user.id);
+          throw avatarUpdateError;
+        }
       }
       const { data: avatarSigned } = avatarPath ? await admin.storage.from("profile-photos").createSignedUrl(avatarPath, 3600) : { data: null };
       return json({ success: true, id: created.user.id, fullName, apartment, role, email, avatarPath, avatar_url: avatarSigned?.signedUrl ?? null });
